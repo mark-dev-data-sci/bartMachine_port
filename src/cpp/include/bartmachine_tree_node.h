@@ -129,7 +129,20 @@ public:
     std::vector<bartMachineTreeNode*> getTerminalNodesWithDataAboveOrEqualToN(int n_rule);
     std::vector<bartMachineTreeNode*> getPrunableAndChangeableNodes();
     
-private:
+    // Public accessor methods for protected members
+    std::vector<int> getPredictorsThatCouldBeUsedToSplitAtNode() {
+        return predictorsThatCouldBeUsedToSplitAtNode();
+    }
+    
+    int getPadj() {
+        return padj;
+    }
+    
+    void setPadj(int value) {
+        padj = value;
+    }
+    
+protected:
     /** a link back to the overall bart model */
     bartmachine_b_hyperparams* bart;
     

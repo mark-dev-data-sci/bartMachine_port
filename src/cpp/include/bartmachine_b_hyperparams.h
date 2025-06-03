@@ -127,6 +127,7 @@ public:
     int getP() const { return p; }
     const std::vector<double*>& getXY() const { return X_y; }
     const std::vector<double*>& getXYByCol() const { return X_y_by_col; }
+    double* getYTrans() const { return y_trans; }
     
     // Friend class declaration to allow bartMachineTreeNode to access protected members
     friend class bartMachineTreeNode;
