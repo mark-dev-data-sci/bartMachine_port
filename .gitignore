@@ -1,0 +1,31 @@
+# Build artifacts
+CMakeFiles/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+
+# CMake generated files
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+Testing/
+
+# Compiled test executables
+test_*
+!test_task_5_1.cpp
+
+# Editor and OS specific files
+.vscode/
+.DS_Store
+*.swp
+*~
+
+# Temporary files
+*.tmp
+*.log
