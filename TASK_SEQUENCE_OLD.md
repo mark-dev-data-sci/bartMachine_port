@@ -1,4 +1,6 @@
-# bartMachine Port - Detailed Task Sequence
+# bartMachine Port - Detailed Task Sequence (SUPERSEDED)
+
+**NOTE: This task sequence has been superseded by the updated TASK_SEQUENCE.md file, which includes a new validation phase between the C++ implementation and Python API development. See VALIDATION_STRATEGY.md for details on the enhanced validation approach.**
 
 ## Task Breakdown Strategy
 - Each task focuses on 3-5 related methods/functions
@@ -183,39 +185,14 @@
 - Multi-threaded variants
 **Validation**: Regression and classification produce identical results
 
-## Phase 7: C++ Validation via R Interface
+## Phase 7: Python API Layer
 
-### Task 7.1: R-to-C++ Bridge Implementation
-**Objective**: Create R bindings for C++ implementation
-**Files**: 
-- Rcpp interface files
-- Modified R bartMachine package
-**Validation**: Can call C++ functions from R
-
-### Task 7.2: Validation with Original Datasets
-**Objective**: Compare C++ implementation with Java using original R interface
-**Methods**:
-- Run identical workflows with both implementations
-- Compare results for numerical equivalence
-- Document any discrepancies
-**Validation**: Identical results between Java and C++ backends
-
-### Task 7.3: Comprehensive Validation Suite
-**Objective**: Create comprehensive test suite for ongoing validation
-**Methods**:
-- Automated test suite for all key functions
-- Edge case testing
-- Performance benchmarking
-**Validation**: Complete test coverage of all functionality
-
-## Phase 8: Python API Layer
-
-### Task 8.1: Python-C++ Bindings
+### Task 7.1: Python-C++ Bindings
 **Objective**: Create Python bindings for C++ classes
 **Files**: Python binding layer using pybind11 or similar
 **Validation**: Can call C++ functions from Python
 
-### Task 8.2: Python bartMachine API - Core Functions
+### Task 7.2: Python bartMachine API - Core Functions
 **Objective**: Port core R bartMachine functions to Python
 **Functions**:
 - `bartMachine()` constructor
@@ -223,7 +200,7 @@
 - Parameter setting methods
 **Validation**: Python API produces identical results to R
 
-### Task 8.3: Python bartMachine API - Advanced Functions
+### Task 7.3: Python bartMachine API - Advanced Functions
 **Objective**: Port advanced R bartMachine functions
 **Functions**:
 - `calc_credible_intervals()`
@@ -236,7 +213,7 @@
 
 ### Before Each Task:
 1. Read CONSTRAINTS.md
-2. Read VALIDATION_STRATEGY.md
+2. Read relevant section of complete_bartmachine_port_prompt.md
 3. Identify specific Java/R code to port
 4. Create tests first (where possible)
 
@@ -252,7 +229,4 @@
 - Validate numerical equivalence
 - Get approval before proceeding
 
-This sequence ensures RNG foundation is solid before building dependent components, and validates the C++ port thoroughly before developing the Python API.
-
-## Note on Task Sequence Updates
-This task sequence was updated on June 3, 2025 to include a dedicated validation phase (Phase 7) using the original R interface with our C++ backend. See VALIDATION_STRATEGY.md for detailed information on the validation approach.
+This sequence ensures RNG foundation is solid before building dependent components.
