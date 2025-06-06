@@ -231,6 +231,11 @@ add_executable(test_task_6_2
     tests/test_task_6_2.cpp
 )
 
+# Task 7 tests
+add_executable(test_task_7_1
+    tests/test_task_7_1.cpp
+)
+
 # Link the libraries to the tests
 target_link_libraries(test_basic_compilation exact_port_mersenne_twister)
 target_link_libraries(test_task_1_2 exact_port_mersenne_twister)
@@ -329,6 +334,24 @@ target_link_libraries(test_task_6_1
 )
 
 target_link_libraries(test_task_6_2
+    bartmachine_regression
+    bartmachine_classification
+    bartmachine_i_prior_cov_spec
+    bartmachine_h_eval
+    bartmachine_g_mh
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
+    stat_util
+    exact_port_mersenne_twister
+)
+
+target_link_libraries(test_task_7_1
     bartmachine_regression
     bartmachine_classification
     bartmachine_i_prior_cov_spec

@@ -6,7 +6,7 @@ Date: 2025-06-06
 Authors@R: c(
     person("Adam", "Kapelner", email = "kapelner@qc.cuny.edu", role = c("aut", "cre")),
     person("Justin", "Bleich", email = "jbleich@wharton.upenn.edu", role = "aut"),
-    person("Mark", "Huber", email = "mark@example.com", role = "aut"),
+    person("Gannon", "Mark", email = "mark.a.gannon@gmail.com", role = "aut"),
     person("C++ Port Team", role = "aut")
   )
 Description: An advanced implementation of Bayesian Additive Regression Trees (BART) with expanded features for data analysis and visualization. This version uses a C++ backend instead of the original Java implementation.

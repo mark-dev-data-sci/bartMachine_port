@@ -59,18 +59,30 @@ bartmachine_regression <- function(X, y, num_trees = 50, num_burn_in = 250, num_
   X <- as.matrix(X)
   y <- as.numeric(y)
   
+  # Create the model using Rcpp
+  model_data <- rcpp_create_regression_model(X, y, num_trees, num_burn_in, num_iterations_after_burn_in)
+  
   # Create a new environment to store the model
   model <- new.env()
   
-  # Store the model parameters
-  model$X <- X
-  model$y <- y
+  # Store the model parameters and pointer
+  model$model_ptr <- model_data$model_ptr
+  model$n <- model_data$n
+  model$p <- model_data$p
   model$num_trees <- num_trees
   model$num_burn_in <- num_burn_in
   model$num_iterations_after_burn_in <- num_iterations_after_burn_in
   
   # Set the class
   class(model) <- "bartmachine_regression"
+  
+  # Register finalizer to clean up C++ resources when R object is garbage collected
+  reg.finalizer(model, function(e) {
+    if (!is.null(e$model_ptr)) {
+      rcpp_cleanup_model(e$model_ptr, FALSE)
+      e$model_ptr <- NULL
+    }
+  }, onexit = TRUE)
   
   return(model)
 }
@@ -86,22 +98,40 @@ predict.bartmachine_regression <- function(model, newdata, get_intervals = FALSE
   # Convert inputs to the right format
   newdata <- as.matrix(newdata)
   
-  # Make predictions for each row of newdata
-  predictions <- list()
-  for (i in 1:nrow(newdata)) {
-    result <- rcpp_bartmachine_regression(model$X, model$y, newdata[i, ])
-    predictions[[i]] <- result
+  # Check if model pointer is valid
+  if (is.null(model$model_ptr)) {
+    stop("Model has been cleaned up or is invalid")
   }
+  
+  # Make predictions using Rcpp
+  result <- rcpp_regression_predict(model$model_ptr, newdata, get_intervals)
   
   # Format the output
   if (get_intervals) {
     return(list(
-      predictions = sapply(predictions, function(x) x$prediction),
-      intervals = lapply(predictions, function(x) c(x$lower, x$upper))
+      predictions = result$predictions,
+      intervals = result$intervals
     ))
   } else {
-    return(sapply(predictions, function(x) x$prediction))
+    return(result$predictions)
   }
+}
+
+#' @title Get variable importance from a bartMachine regression model
+#' @description Gets variable importance from a bartMachine regression model
+#' @param model A bartMachine regression model
+#' @return A vector of variable importance scores
+#' @export
+get_variable_importance.bartmachine_regression <- function(model) {
+  # Check if model pointer is valid
+  if (is.null(model$model_ptr)) {
+    stop("Model has been cleaned up or is invalid")
+  }
+  
+  # Get variable importance using Rcpp
+  result <- rcpp_get_variable_importance(model$model_ptr, FALSE)
+  
+  return(result$importance)
 }
 
 #' @title Build a bartMachine classification model
@@ -118,18 +148,30 @@ bartmachine_classification <- function(X, y, num_trees = 50, num_burn_in = 250, 
   X <- as.matrix(X)
   y <- as.integer(y)
   
+  # Create the model using Rcpp
+  model_data <- rcpp_create_classification_model(X, y, num_trees, num_burn_in, num_iterations_after_burn_in)
+  
   # Create a new environment to store the model
   model <- new.env()
   
-  # Store the model parameters
-  model$X <- X
-  model$y <- y
+  # Store the model parameters and pointer
+  model$model_ptr <- model_data$model_ptr
+  model$n <- model_data$n
+  model$p <- model_data$p
   model$num_trees <- num_trees
   model$num_burn_in <- num_burn_in
   model$num_iterations_after_burn_in <- num_iterations_after_burn_in
   
   # Set the class
   class(model) <- "bartmachine_classification"
+  
+  # Register finalizer to clean up C++ resources when R object is garbage collected
+  reg.finalizer(model, function(e) {
+    if (!is.null(e$model_ptr)) {
+      rcpp_cleanup_model(e$model_ptr, TRUE)
+      e$model_ptr <- NULL
+    }
+  }, onexit = TRUE)
   
   return(model)
 }
@@ -146,19 +188,33 @@ predict.bartmachine_classification <- function(model, newdata, type = c("class",
   newdata <- as.matrix(newdata)
   type <- match.arg(type)
   
-  # Make predictions for each row of newdata
-  predictions <- list()
-  for (i in 1:nrow(newdata)) {
-    result <- rcpp_bartmachine_classification(model$X, model$y, newdata[i, ])
-    predictions[[i]] <- result
+  # Check if model pointer is valid
+  if (is.null(model$model_ptr)) {
+    stop("Model has been cleaned up or is invalid")
   }
   
-  # Format the output
-  if (type == "class") {
-    return(sapply(predictions, function(x) x$prediction))
-  } else {
-    return(sapply(predictions, function(x) x$probability))
+  # Make predictions using Rcpp
+  result <- rcpp_classification_predict(model$model_ptr, newdata, type)
+  
+  # Return the predictions
+  return(result$predictions)
+}
+
+#' @title Get variable importance from a bartMachine classification model
+#' @description Gets variable importance from a bartMachine classification model
+#' @param model A bartMachine classification model
+#' @return A vector of variable importance scores
+#' @export
+get_variable_importance.bartmachine_classification <- function(model) {
+  # Check if model pointer is valid
+  if (is.null(model$model_ptr)) {
+    stop("Model has been cleaned up or is invalid")
   }
+  
+  # Get variable importance using Rcpp
+  result <- rcpp_get_variable_importance(model$model_ptr, TRUE)
+  
+  return(result$importance)
 }
 
 #' @title Print a bartMachine regression model
@@ -171,8 +227,9 @@ print.bartmachine_regression <- function(x, ...) {
   cat("Number of trees:", x$num_trees, "\n")
   cat("Number of burn-in iterations:", x$num_burn_in, "\n")
   cat("Number of iterations after burn-in:", x$num_iterations_after_burn_in, "\n")
-  cat("Number of predictors:", ncol(x$X), "\n")
-  cat("Number of observations:", nrow(x$X), "\n")
+  cat("Number of predictors:", x$p, "\n")
+  cat("Number of observations:", x$n, "\n")
+  cat("Model status:", ifelse(is.null(x$model_ptr), "Invalid (cleaned up)", "Valid"), "\n")
 }
 
 #' @title Print a bartMachine classification model
@@ -185,6 +242,7 @@ print.bartmachine_classification <- function(x, ...) {
   cat("Number of trees:", x$num_trees, "\n")
   cat("Number of burn-in iterations:", x$num_burn_in, "\n")
   cat("Number of iterations after burn-in:", x$num_iterations_after_burn_in, "\n")
-  cat("Number of predictors:", ncol(x$X), "\n")
-  cat("Number of observations:", nrow(x$X), "\n")
+  cat("Number of predictors:", x$p, "\n")
+  cat("Number of observations:", x$n, "\n")
+  cat("Model status:", ifelse(is.null(x$model_ptr), "Invalid (cleaned up)", "Valid"), "\n")
 }

@@ -13,6 +13,8 @@ S3method(predict, bartmachine_regression)
 S3method(predict, bartmachine_classification)
 S3method(print, bartmachine_regression)
 S3method(print, bartmachine_classification)
+S3method(get_variable_importance, bartmachine_regression)
+S3method(get_variable_importance, bartmachine_classification)
 
 # Import Rcpp
 importFrom(Rcpp, sourceCpp)

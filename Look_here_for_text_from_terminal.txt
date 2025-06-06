@@ -1,0 +1,117 @@
+[DEBUG_TASK_5_3] Found variability for predictor 2 at indices 0 and 1 with values 0.183919 and 0.653177
+[DEBUG_TASK_5_3] Checking predictor 3
+[DEBUG_TASK_5_3] Checking variability for predictor 3
+[DEBUG_TASK_5_3] Found variability for predictor 3 at indices 0 and 1 with values 0.204560 and 0.748907
+[DEBUG_TASK_5_3] Checking predictor 4
+[DEBUG_TASK_5_3] Checking variability for predictor 4
+[DEBUG_TASK_5_3] Found variability for predictor 4 at indices 0 and 1 with values 0.567725 and 0.653570
+[DEBUG_TASK_5_3] Final possible_rule_variables: 0 1 2 3 4 
+[DEBUG_TASK_5_3] Returning 5 predictors
+[DEBUG_TASK_5_3] Entering tabulatePredictorsThatCouldBeUsedToSplitAtNode()
+[DEBUG_TASK_5_3] mem_cache_for_speed: false
+[DEBUG_TASK_5_3] parent: nullptr
+[DEBUG_TASK_5_3] n_eta: 100
+[DEBUG_TASK_5_3] bart->p: 5
+[DEBUG_TASK_5_3] X_y_by_col size: 6
+[DEBUG_TASK_5_3] possible_rule_variables_contenders size: 0
+[DEBUG_TASK_5_3] Using num_predictors: 5 instead of bart->p: 5
+[DEBUG_TASK_5_3] Checking predictor 0
+[DEBUG_TASK_5_3] Checking variability for predictor 0
+[DEBUG_TASK_5_3] Found variability for predictor 0 at indices 0 and 1 with values 0.929616 and 0.595545
+[DEBUG_TASK_5_3] Checking predictor 1
+[DEBUG_TASK_5_3] Checking variability for predictor 1
+[DEBUG_TASK_5_3] Found variability for predictor 1 at indices 0 and 1 with values 0.316376 and 0.964515
+[DEBUG_TASK_5_3] Checking predictor 2
+[DEBUG_TASK_5_3] Checking variability for predictor 2
+[DEBUG_TASK_5_3] Found variability for predictor 2 at indices 0 and 1 with values 0.183919 and 0.653177
+[DEBUG_TASK_5_3] Checking predictor 3
+[DEBUG_TASK_5_3] Checking variability for predictor 3
+[DEBUG_TASK_5_3] Found variability for predictor 3 at indices 0 and 1 with values 0.204560 and 0.748907
+[DEBUG_TASK_5_3] Checking predictor 4
+[DEBUG_TASK_5_3] Checking variability for predictor 4
+[DEBUG_TASK_5_3] Found variability for predictor 4 at indices 0 and 1 with values 0.567725 and 0.653570
+[DEBUG_TASK_5_3] Final possible_rule_variables: 0 1 2 3 4 
+[DEBUG_TASK_5_3] Returning 5 predictors
+[DEBUG_TASK_5_3] Entering tabulatePredictorsThatCouldBeUsedToSplitAtNode()
+[DEBUG_TASK_5_3] mem_cache_for_speed: false
+[DEBUG_TASK_5_3] parent: nullptr
+[DEBUG_TASK_5_3] n_eta: 100
+[DEBUG_TASK_5_3] bart->p: 5
+[DEBUG_TASK_5_3] X_y_by_col size: 6
+[DEBUG_TASK_5_3] possible_rule_variables_contenders size: 0
+[DEBUG_TASK_5_3] Using num_predictors: 5 instead of bart->p: 5
+[DEBUG_TASK_5_3] Checking predictor 0
+[DEBUG_TASK_5_3] Checking variability for predictor 0
+[DEBUG_TASK_5_3] Found variability for predictor 0 at indices 0 and 1 with values 0.929616 and 0.595545
+[DEBUG_TASK_5_3] Checking predictor 1
+[DEBUG_TASK_5_3] Checking variability for predictor 1
+[DEBUG_TASK_5_3] Found variability for predictor 1 at indices 0 and 1 with values 0.316376 and 0.964515
+[DEBUG_TASK_5_3] Checking predictor 2
+[DEBUG_TASK_5_3] Checking variability for predictor 2
+[DEBUG_TASK_5_3] Found variability for predictor 2 at indices 0 and 1 with values 0.183919 and 0.653177
+[DEBUG_TASK_5_3] Checking predictor 3
+[DEBUG_TASK_5_3] Checking variability for predictor 3
+[DEBUG_TASK_5_3] Found variability for predictor 3 at indices 0 and 1 with values 0.204560 and 0.748907
+[DEBUG_TASK_5_3] Checking predictor 4
+[DEBUG_TASK_5_3] Checking variability for predictor 4
+[DEBUG_TASK_5_3] Found variability for predictor 4 at indices 0 and 1 with values 0.567725 and 0.653570
+[DEBUG_TASK_5_3] Final possible_rule_variables: 0 1 2 3 4 
+[DEBUG_TASK_5_3] Returning 5 predictors
+[DEBUG_TASK_5_3] Entering tabulatePredictorsThatCouldBeUsedToSplitAtNode()
+[DEBUG_TASK_5_3] mem_cache_for_speed: false
+[DEBUG_TASK_5_3] parent: nullptr
+[DEBUG_TASK_5_3] n_eta: 100
+[DEBUG_TASK_5_3] bart->p: 5
+[DEBUG_TASK_5_3] X_y_by_col size: 6
+[DEBUG_TASK_5_3] possible_rule_variables_contenders size: 0
+[DEBUG_TASK_5_3] Using num_predictors: 5 instead of bart->p: 5
+[DEBUG_TASK_5_3] Checking predictor 0
+[DEBUG_TASK_5_3] Checking variability for predictor 0
+[DEBUG_TASK_5_3] Found variability for predictor 0 at indices 0 and 1 with values 0.929616 and 0.595545
+[DEBUG_TASK_5_3] Checking predictor 1
+[DEBUG_TASK_5_3] Checking variability for predictor 1
+[DEBUG_TASK_5_3] Found variability for predictor 1 at indices 0 and 1 with values 0.316376 and 0.964515
+[DEBUG_TASK_5_3] Checking predictor 2
+[DEBUG_TASK_5_3] Checking variability for predictor 2
+[DEBUG_TASK_5_3] Found variability for predictor 2 at indices 0 and 1 with values 0.183919 and 0.653177
+[DEBUG_TASK_5_3] Checking predictor 3
+[DEBUG_TASK_5_3] Checking variability for predictor 3
+[DEBUG_TASK_5_3] Found variability for predictor 3 at indices 0 and 1 with values 0.204560 and 0.748907
+[DEBUG_TASK_5_3] Checking predictor 4
+[DEBUG_TASK_5_3] Checking variability for predictor 4
+[DEBUG_TASK_5_3] Found variability for predictor 4 at indices 0 and 1 with values 0.567725 and 0.653570
+[DEBUG_TASK_5_3] Final possible_rule_variables: 0 1 2 3 4 
+[DEBUG_TASK_5_3] Returning 5 predictors
+[DEBUG_TASK_5_3] Entering tabulatePredictorsThatCouldBeUsedToSplitAtNode()
+[DEBUG_TASK_5_3] mem_cache_for_speed: false
+[DEBUG_TASK_5_3] parent: nullptr
+[DEBUG_TASK_5_3] n_eta: 100
+[DEBUG_TASK_5_3] bart->p: 5
+[DEBUG_TASK_5_3] X_y_by_col size: 6
+[DEBUG_TASK_5_3] possible_rule_variables_contenders size: 0
+[DEBUG_TASK_5_3] Using num_predictors: 5 instead of bart->p: 5
+[DEBUG_TASK_5_3] Checking predictor 0
+[DEBUG_TASK_5_3] Checking variability for predictor 0
+[DEBUG_TASK_5_3] Found variability for predictor 0 at indices 0 and 1 with values 0.929616 and 0.595545
+[DEBUG_TASK_5_3] Checking predictor 1
+[DEBUG_TASK_5_3] Checking variability for predictor 1
+[DEBUG_TASK_5_3] Found variability for predictor 1 at indices 0 and 1 with values 0.316376 and 0.964515
+[DEBUG_TASK_5_3] Checking predictor 2
+[DEBUG_TASK_5_3] Checking variability for predictor 2
+[DEBUG_TASK_5_3] Found variability for predictor 2 at indices 0 and 1 with values 0.183919 and 0.653177
+[DEBUG_TASK_5_3] Checking predictor 3
+[DEBUG_TASK_5_3] Checking variability for predictor 3
+[DEBUG_TASK_5_3] Found variability for predictor 3 at indices 0 and 1 with values 0.204560 and 0.748907
+[DEBUG_TASK_5_3] Checking predictor 4
+[DEBUG_TASK_5_3] Checking variability for predictor 4
+[DEBUG_TASK_5_3] Found variability for predictor 4 at indices 0 and 1 with values 0.567725 and 0.653570
+[DEBUG_TASK_5_3] Final possible_rule_variables: 0 1 2 3 4 
+[DEBUG_TASK_5_3] Returning 5 predictors
+Prediction for test point: nan
+95% prediction interval: [nan, nan]
+Assertion failed: (prediction >= interval[0] && prediction <= interval[1]), function test_bartmachine_regression, file test_task_6_2.cpp, line 81.
+[1]    55702 abort      ./test_task_6_2
+➜  build git:(task-6-2-regression-classification) ✗ 
+ *  History restored 
+
+➜  build git:(task-6-2-regression-classification) ✗ 
