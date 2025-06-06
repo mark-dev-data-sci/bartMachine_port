@@ -28,6 +28,7 @@ endif()
 
 # Include directories
 include_directories(src/cpp/include)
+include_directories(.)  # Include the root directory for tests
 
 # Source files
 set(MERSENNE_SOURCES
