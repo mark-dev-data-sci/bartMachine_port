@@ -1,0 +1,30 @@
+Package: bartMachine
+Type: Package
+Title: Bayesian Additive Regression Trees
+Version: 2.0.0
+Date: 2025-06-06
+Authors@R: c(
+    person("Adam", "Kapelner", email = "kapelner@qc.cuny.edu", role = c("aut", "cre")),
+    person("Justin", "Bleich", email = "jbleich@wharton.upenn.edu", role = "aut"),
+    person("Mark", "Huber", email = "mark@example.com", role = "aut"),
+    person("C++ Port Team", role = "aut")
+  )
+Description: An advanced implementation of Bayesian Additive Regression Trees (BART) with expanded features for data analysis and visualization. This version uses a C++ backend instead of the original Java implementation.
+License: GPL-3
+Depends:
+    R (>= 3.5.0)
+Imports:
+    Rcpp (>= 1.0.0),
+    graphics,
+    stats,
+    utils
+LinkingTo: Rcpp
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 7.2.3
+Encoding: UTF-8
+URL: https://github.com/mark-dev-data-sci/bartMachine_port
+BugReports: https://github.com/mark-dev-data-sci/bartMachine_port/issues
