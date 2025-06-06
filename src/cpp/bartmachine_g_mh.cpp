@@ -183,21 +183,58 @@ bartmachine_g_mh::Steps bartmachine_g_mh::randomlyPickAmongTheProposalSteps() {
 // These will be implemented in future tasks
 
 double bartmachine_g_mh::doMHPruneAndCalcLnR(bartMachineTreeNode* T_i, bartMachineTreeNode* T_star) {
-    // This is a placeholder implementation
-    // Will be implemented in Task 5.4
-    return std::numeric_limits<double>::lowest();
+    // First select a node that can be pruned
+    bartMachineTreeNode* prune_node = pickPruneNodeOrChangeNode(T_star);
+    // If we didn't find one to prune, then we can't prune, so reject offhand
+    if (prune_node == nullptr) {
+        return std::numeric_limits<double>::lowest();
+    }
+    
+    double ln_transition_ratio_prune = calcLnTransRatioPrune(T_i, T_star, prune_node);
+    double ln_likelihood_ratio_prune = -calcLnLikRatioGrow(prune_node); // Inverse of before (will speed up later)
+    double ln_tree_structure_ratio_prune = -calcLnTreeStructureRatioGrow(prune_node);
+    
+    if (DEBUG_MH) {
+        std::cout << gibbs_sample_num << " PRUNE <<" << prune_node->stringLocation(true) << 
+                ">> ---- X_" << (prune_node->splitAttributeM == bartMachineTreeNode::BAD_FLAG_int ? "null" : std::to_string(prune_node->splitAttributeM)) << 
+                " < " << (prune_node->splitValue == bartMachineTreeNode::BAD_FLAG_double ? "NaN" : std::to_string(prune_node->splitValue)) << 
+                "\n  ln trans ratio: " << ln_transition_ratio_prune << " ln lik ratio: " << ln_likelihood_ratio_prune << " ln structure ratio: " << ln_tree_structure_ratio_prune <<
+                "\n  trans ratio: " << 
+                (std::exp(ln_transition_ratio_prune) < 0.00001 ? "very small" : std::to_string(std::exp(ln_transition_ratio_prune))) <<
+                "  lik ratio: " << 
+                (std::exp(ln_likelihood_ratio_prune) < 0.00001 ? "very small" : std::to_string(std::exp(ln_likelihood_ratio_prune))) <<
+                "  structure ratio: " << 
+                (std::exp(ln_tree_structure_ratio_prune) < 0.00001 ? "very small" : std::to_string(std::exp(ln_tree_structure_ratio_prune))) << std::endl;
+    }
+    
+    bartMachineTreeNode::pruneTreeAt(prune_node);
+    return ln_transition_ratio_prune + ln_likelihood_ratio_prune + ln_tree_structure_ratio_prune;
 }
 
 double bartmachine_g_mh::calcLnTransRatioPrune(bartMachineTreeNode* T_i, bartMachineTreeNode* T_star, bartMachineTreeNode* prune_node) {
-    // This is a placeholder implementation
-    // Will be implemented in Task 5.4
-    return 0.0;
+    int w_2 = T_i->numPruneNodesAvailable();
+    int b = T_i->numLeaves();
+    double p_adj = pAdj(prune_node);
+    int n_adj = prune_node->getNAdj();
+    return std::log(w_2) - std::log(b - 1) - std::log(p_adj) - std::log(n_adj);
 }
 
 bartMachineTreeNode* bartmachine_g_mh::pickPruneNodeOrChangeNode(bartMachineTreeNode* T) {
-    // This is a placeholder implementation
-    // Will be implemented in Task 5.4
-    return nullptr;
+    // Two checks need to be performed first before we run a search on the tree structure
+    // a) If this is the root, we can't prune so return null
+    // b) If there are no prunable nodes (not sure how that could happen), return null as well
+    
+    if (T->isStump()) {
+        return nullptr;
+    }
+    
+    std::vector<bartMachineTreeNode*> prunable_and_changeable_nodes = T->getPrunableAndChangeableNodes();
+    if (prunable_and_changeable_nodes.size() == 0) {
+        return nullptr;
+    }
+    
+    // Now we pick one of these nodes randomly
+    return prunable_and_changeable_nodes[static_cast<int>(std::floor(StatToolbox::rand() * prunable_and_changeable_nodes.size()))];
 }
 
 double bartmachine_g_mh::doMHChangeAndCalcLnR(bartMachineTreeNode* T_i, bartMachineTreeNode* T_star) {
