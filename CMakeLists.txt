@@ -79,6 +79,14 @@ set(BARTMACHINE_I_PRIOR_COV_SPEC_SOURCES
     src/cpp/bartmachine_i_prior_cov_spec.cpp
 )
 
+set(BARTMACHINE_REGRESSION_SOURCES
+    src/cpp/bartmachine_regression.cpp
+)
+
+set(BARTMACHINE_CLASSIFICATION_SOURCES
+    src/cpp/bartmachine_classification.cpp
+)
+
 # Create library for MersenneTwister
 add_library(exact_port_mersenne_twister ${MERSENNE_SOURCES})
 
@@ -94,6 +102,8 @@ add_library(bartmachine_f_gibbs_internal ${BARTMACHINE_F_GIBBS_INTERNAL_SOURCES}
 add_library(bartmachine_g_mh ${BARTMACHINE_G_MH_SOURCES})
 add_library(bartmachine_h_eval ${BARTMACHINE_H_EVAL_SOURCES})
 add_library(bartmachine_i_prior_cov_spec ${BARTMACHINE_I_PRIOR_COV_SPEC_SOURCES})
+add_library(bartmachine_regression ${BARTMACHINE_REGRESSION_SOURCES})
+add_library(bartmachine_classification ${BARTMACHINE_CLASSIFICATION_SOURCES})
 
 # Set up dependencies
 target_link_libraries(bartmachine_b_hyperparams bartmachine_a_base)
@@ -107,6 +117,8 @@ target_link_libraries(bartmachine_f_gibbs_internal bartmachine_e_gibbs_base stat
 target_link_libraries(bartmachine_g_mh bartmachine_f_gibbs_internal)
 target_link_libraries(bartmachine_h_eval bartmachine_g_mh)
 target_link_libraries(bartmachine_i_prior_cov_spec bartmachine_h_eval)
+target_link_libraries(bartmachine_regression bartmachine_i_prior_cov_spec)
+target_link_libraries(bartmachine_classification bartmachine_i_prior_cov_spec)
 
 # Include tests directory
 include_directories(tests)
@@ -210,6 +222,10 @@ add_executable(test_task_6_1
     tests/test_task_6_1.cpp
 )
 
+add_executable(test_task_6_2
+    tests/test_task_6_2.cpp
+)
+
 # Link the libraries to the tests
 target_link_libraries(test_basic_compilation exact_port_mersenne_twister)
 target_link_libraries(test_task_1_2 exact_port_mersenne_twister)
@@ -293,6 +309,23 @@ target_link_libraries(test_task_5_6
 )
 
 target_link_libraries(test_task_6_1
+    bartmachine_i_prior_cov_spec
+    bartmachine_h_eval
+    bartmachine_g_mh
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
+    exact_port_mersenne_twister
+)
+
+target_link_libraries(test_task_6_2
+    bartmachine_regression
+    bartmachine_classification
     bartmachine_i_prior_cov_spec
     bartmachine_h_eval
     bartmachine_g_mh
