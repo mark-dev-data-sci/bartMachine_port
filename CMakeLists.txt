@@ -181,6 +181,14 @@ add_executable(test_task_5_3
     tests/test_task_5_3.cpp
 )
 
+add_executable(test_task_5_4
+    tests/test_task_5_4.cpp
+)
+
+add_executable(test_task_5_5
+    tests/test_task_5_5.cpp
+)
+
 # Link the libraries to the tests
 target_link_libraries(test_basic_compilation exact_port_mersenne_twister)
 target_link_libraries(test_task_1_2 exact_port_mersenne_twister)
@@ -212,6 +220,32 @@ target_link_libraries(test_task_5_2
 )
 
 target_link_libraries(test_task_5_3 
+    bartmachine_g_mh
+    bartmachine_f_gibbs_internal 
+    bartmachine_e_gibbs_base 
+    bartmachine_d_init 
+    bartmachine_c_debug 
+    bartmachine_b_hyperparams 
+    bartmachine_a_base 
+    bartmachine_tree_node 
+    stat_toolbox 
+    exact_port_mersenne_twister
+)
+
+target_link_libraries(test_task_5_4 
+    bartmachine_g_mh
+    bartmachine_f_gibbs_internal 
+    bartmachine_e_gibbs_base 
+    bartmachine_d_init 
+    bartmachine_c_debug 
+    bartmachine_b_hyperparams 
+    bartmachine_a_base 
+    bartmachine_tree_node 
+    stat_toolbox 
+    exact_port_mersenne_twister
+)
+
+target_link_libraries(test_task_5_5 
     bartmachine_g_mh
     bartmachine_f_gibbs_internal 
     bartmachine_e_gibbs_base 
