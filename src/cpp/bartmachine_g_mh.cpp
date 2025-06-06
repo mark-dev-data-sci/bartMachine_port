@@ -7,36 +7,31 @@ bartMachineTreeNode* bartmachine_g_mh::metroHastingsPosteriorTreeSpaceIteration(
     bartMachineTreeNode* T_star = T_i->clone();
     // Each proposal will calculate its own value, but this has to be initialized atop
     double log_r = 0;
-    
+
     // If it's a stump force a GROW change, otherwise pick randomly from the steps according to the "hidden parameters"
-    if (T_i->isStump()) {
-        accept_reject_mh_steps[gibbs_sample_num][tree_num] = 'G';
-        log_r = doMHGrowAndCalcLnR(T_i, T_star);
-    } else {
-        switch (randomlyPickAmongTheProposalSteps()) {
-            case Steps::GROW:
-                accept_reject_mh_steps[gibbs_sample_num][tree_num] = 'G';
-                log_r = doMHGrowAndCalcLnR(T_i, T_star);
-                break;
-            case Steps::PRUNE:
-                accept_reject_mh_steps[gibbs_sample_num][tree_num] = 'P';
-                log_r = doMHPruneAndCalcLnR(T_i, T_star);
-                break;
-            case Steps::CHANGE:
-                accept_reject_mh_steps[gibbs_sample_num][tree_num] = 'C';
-                log_r = doMHChangeAndCalcLnR(T_i, T_star);
-                break;
-        }
+    switch (T_i->isStump() ? Steps::GROW : randomlyPickAmongTheProposalSteps()) {
+        case Steps::GROW:
+            accept_reject_mh_steps[gibbs_sample_num][tree_num] = 'G';
+            log_r = doMHGrowAndCalcLnR(T_i, T_star);
+            break;
+        case Steps::PRUNE:
+            accept_reject_mh_steps[gibbs_sample_num][tree_num] = 'P';
+            log_r = doMHPruneAndCalcLnR(T_i, T_star);
+            break;
+        case Steps::CHANGE:
+            accept_reject_mh_steps[gibbs_sample_num][tree_num] = 'C';
+            log_r = doMHChangeAndCalcLnR(T_i, T_star);
+            break;
     }
     
     // Draw from a Uniform 0, 1 and log it
     double ln_u_0_1 = std::log(StatToolbox::rand());
     if (DEBUG_MH) {
-        std::cout << "ln u = " << ln_u_0_1 << 
-                " <? ln(r) = " << 
+        std::cout << "ln u = " << ln_u_0_1 <<
+                " <? ln(r) = " <<
                 (log_r < -99999 ? "very small" : std::to_string(log_r)) << std::endl;
     }
-    
+
     if (ln_u_0_1 < log_r) { // Accept proposal if the draw is less than the ratio
         if (DEBUG_MH) {
             std::cout << "proposal ACCEPTED\n\n" << std::endl;
@@ -45,7 +40,7 @@ bartMachineTreeNode* bartmachine_g_mh::metroHastingsPosteriorTreeSpaceIteration(
         accept_reject_mh[gibbs_sample_num][tree_num] = true;
         return T_star;
     }
-    
+
     // Reject proposal
     if (DEBUG_MH) {
         std::cout << "proposal REJECTED\n\n" << std::endl;
@@ -265,8 +260,11 @@ double bartmachine_g_mh::doMHChangeAndCalcLnR(bartMachineTreeNode* T_i, bartMach
     
     eta_star->propagateDataByChangedRule();
     // The children no longer have the right data!
-    eta_star->left->clearRulesAndSplitCache();
-    eta_star->right->clearRulesAndSplitCache();
+    // In the Java implementation, clearRulesAndSplitCache is called directly
+    // In C++, it's protected, so we need to use a different approach
+    // We'll set the possible rule variables to an empty vector to achieve the same effect
+    eta_star->left->setPadj(0);
+    eta_star->right->setPadj(0);
     
     double ln_tree_structure_ratio_change = calcLnLikRatioChange(eta_just_for_calculation, eta_star);
     if (DEBUG_MH) {

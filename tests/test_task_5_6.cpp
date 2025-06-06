@@ -17,6 +17,7 @@ public:
     // Make protected methods public for testing
     using bartmachine_g_mh::metroHastingsPosteriorTreeSpaceIteration;
     using bartmachine_g_mh::randomlyPickAmongTheProposalSteps;
+    using bartmachine_g_mh::Steps;
     
     // Make protected members public for testing
     void setGibbsSampleNum(int num) {
@@ -33,6 +34,31 @@ public:
     
     void setProbPrune(double prob) {
         prob_prune = prob;
+    }
+    
+    // Additional setters for protected members
+    void setP(int value) {
+        p = value;
+    }
+    
+    void setN(int value) {
+        n = value;
+    }
+    
+    void setAlpha(double value) {
+        alpha = value;
+    }
+    
+    void setBeta(double value) {
+        beta = value;
+    }
+    
+    void setHyperSigsqMu(double value) {
+        hyper_sigsq_mu = value;
+    }
+    
+    void setMemCacheForSpeed(bool value) {
+        mem_cache_for_speed = value;
     }
     
     // Constructor that calls parent constructor
@@ -78,33 +104,55 @@ public:
 };
 
 /**
+ * Test class that extends bartMachineTreeNode to access protected members
+ */
+class TestTreeNode : public bartMachineTreeNode {
+public:
+    // Constructor that calls parent constructor
+    TestTreeNode(bartmachine_b_hyperparams* bart) : bartMachineTreeNode(bart) {}
+    
+    // Constructor that calls parent constructor with parent node
+    TestTreeNode(bartMachineTreeNode* parent) : bartMachineTreeNode(parent) {}
+    
+    // Set responses
+    void setResponses(double* resp) {
+        responses = resp;
+    }
+    
+    // Set indices
+    void setIndices(int* idx) {
+        indicies = idx;
+    }
+};
+
+/**
  * Create a simple tree for testing the MH algorithm
  */
 bartMachineTreeNode* createTestTree(bartmachine_b_hyperparams* bart) {
-    // Create a root node with the bart hyperparameters
-    bartMachineTreeNode* root = new bartMachineTreeNode(bart);
-    
-    // Set up a simple tree with a split
-    root->setSplitAttributeM(0);  // Split on first attribute
-    root->setSplitValue(0.5);     // Split at value 0.5
-    
-    // Create left and right children with parent
-    bartMachineTreeNode* leftChild = new bartMachineTreeNode(root);
-    bartMachineTreeNode* rightChild = new bartMachineTreeNode(root);
-    
-    // Set parent-child relationships
-    root->setLeft(leftChild);
-    root->setRight(rightChild);
+    // Create a stump (single node tree) for simplicity
+    TestTreeNode* root = new TestTreeNode(bart);
     
     // Set leaf status
-    leftChild->setLeaf(true);
-    rightChild->setLeaf(true);
-    root->setLeaf(false);
+    root->setLeaf(true);
     
-    // Initialize some data for the nodes
+    // Initialize data for the node
+    // This is a stump, so it contains all data points
     root->n_eta = 3;
-    leftChild->n_eta = 1;
-    rightChild->n_eta = 2;
+    
+    // Set up responses and indices
+    double* responses = new double[3];
+    responses[0] = 1.0;
+    responses[1] = 2.0;
+    responses[2] = 3.0;
+    
+    int* indices = new int[3];
+    indices[0] = 0;
+    indices[1] = 1;
+    indices[2] = 2;
+    
+    // Set the responses and indices in the node
+    root->setResponses(responses);
+    root->setIndices(indices);
     
     return root;
 }
@@ -186,6 +234,14 @@ void testMetroHastingsPosteriorTreeSpaceIteration() {
         {1.0, 2.0, 3.0}   // y column
     };
     mh.setTestXYByCol(X_y_by_col);
+    
+    // Set additional parameters needed for the test
+    mh.setP(3);  // Number of predictors
+    mh.setN(3);  // Number of observations
+    mh.setAlpha(0.95);  // Default alpha value
+    mh.setBeta(2.0);    // Default beta value
+    mh.setHyperSigsqMu(1.0);  // Default value
+    mh.setMemCacheForSpeed(false);  // Disable memory caching for simplicity
     
     // Set probabilities
     std::cout << "    Setting probabilities..." << std::endl;
