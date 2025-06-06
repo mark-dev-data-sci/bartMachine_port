@@ -71,6 +71,14 @@ set(BARTMACHINE_G_MH_SOURCES
     src/cpp/bartmachine_g_mh.cpp
 )
 
+set(BARTMACHINE_H_EVAL_SOURCES
+    src/cpp/bartmachine_h_eval.cpp
+)
+
+set(BARTMACHINE_I_PRIOR_COV_SPEC_SOURCES
+    src/cpp/bartmachine_i_prior_cov_spec.cpp
+)
+
 # Create library for MersenneTwister
 add_library(exact_port_mersenne_twister ${MERSENNE_SOURCES})
 
@@ -84,6 +92,8 @@ add_library(bartmachine_d_init ${BARTMACHINE_D_INIT_SOURCES})
 add_library(bartmachine_e_gibbs_base ${BARTMACHINE_E_GIBBS_BASE_SOURCES})
 add_library(bartmachine_f_gibbs_internal ${BARTMACHINE_F_GIBBS_INTERNAL_SOURCES})
 add_library(bartmachine_g_mh ${BARTMACHINE_G_MH_SOURCES})
+add_library(bartmachine_h_eval ${BARTMACHINE_H_EVAL_SOURCES})
+add_library(bartmachine_i_prior_cov_spec ${BARTMACHINE_I_PRIOR_COV_SPEC_SOURCES})
 
 # Set up dependencies
 target_link_libraries(bartmachine_b_hyperparams bartmachine_a_base)
@@ -95,6 +105,8 @@ target_link_libraries(bartmachine_d_init bartmachine_c_debug stat_toolbox)
 target_link_libraries(bartmachine_e_gibbs_base bartmachine_d_init)
 target_link_libraries(bartmachine_f_gibbs_internal bartmachine_e_gibbs_base stat_toolbox)
 target_link_libraries(bartmachine_g_mh bartmachine_f_gibbs_internal)
+target_link_libraries(bartmachine_h_eval bartmachine_g_mh)
+target_link_libraries(bartmachine_i_prior_cov_spec bartmachine_h_eval)
 
 # Include tests directory
 include_directories(tests)
@@ -193,6 +205,11 @@ add_executable(test_task_5_6
     tests/test_task_5_6.cpp
 )
 
+# Task 6 tests
+add_executable(test_task_6_1
+    tests/test_task_6_1.cpp
+)
+
 # Link the libraries to the tests
 target_link_libraries(test_basic_compilation exact_port_mersenne_twister)
 target_link_libraries(test_task_1_2 exact_port_mersenne_twister)
@@ -262,16 +279,31 @@ target_link_libraries(test_task_5_5
     exact_port_mersenne_twister
 )
 
-target_link_libraries(test_task_5_6 
+target_link_libraries(test_task_5_6
     bartmachine_g_mh
-    bartmachine_f_gibbs_internal 
-    bartmachine_e_gibbs_base 
-    bartmachine_d_init 
-    bartmachine_c_debug 
-    bartmachine_b_hyperparams 
-    bartmachine_a_base 
-    bartmachine_tree_node 
-    stat_toolbox 
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
+    exact_port_mersenne_twister
+)
+
+target_link_libraries(test_task_6_1
+    bartmachine_i_prior_cov_spec
+    bartmachine_h_eval
+    bartmachine_g_mh
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
     exact_port_mersenne_twister
 )
 
