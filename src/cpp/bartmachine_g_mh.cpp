@@ -179,9 +179,6 @@ bartmachine_g_mh::Steps bartmachine_g_mh::randomlyPickAmongTheProposalSteps() {
     return Steps::CHANGE;
 }
 
-// Placeholder implementations for other methods
-// These will be implemented in future tasks
-
 double bartmachine_g_mh::doMHPruneAndCalcLnR(bartMachineTreeNode* T_i, bartMachineTreeNode* T_star) {
     // First select a node that can be pruned
     bartMachineTreeNode* prune_node = pickPruneNodeOrChangeNode(T_star);
@@ -237,6 +234,7 @@ bartMachineTreeNode* bartmachine_g_mh::pickPruneNodeOrChangeNode(bartMachineTree
     return prunable_and_changeable_nodes[static_cast<int>(std::floor(StatToolbox::rand() * prunable_and_changeable_nodes.size()))];
 }
 
+// Placeholder implementations for Task 5.5
 double bartmachine_g_mh::doMHChangeAndCalcLnR(bartMachineTreeNode* T_i, bartMachineTreeNode* T_star) {
     // This is a placeholder implementation
     // Will be implemented in Task 5.5
