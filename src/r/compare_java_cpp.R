@@ -253,49 +253,107 @@ compare_results <- function(java_results, cpp_results, type = "regression") {
   )
 }
 
+# Function to load datasets from the original bartMachine repository
+load_original_datasets <- function() {
+  # Path to the original repository datasets
+  datasets_path <- "/Users/mark/Documents/Cline/bartMachine/datasets"
+  
+  # List of datasets to use
+  datasets <- list()
+  
+  # Check if the datasets directory exists
+  if (dir.exists(datasets_path)) {
+    cat("Loading datasets from original bartMachine repository...\n")
+    
+    # Load regression datasets
+    if (file.exists(file.path(datasets_path, "friedman1.RData"))) {
+      load(file.path(datasets_path, "friedman1.RData"))
+      datasets$regression$friedman1 <- list(X = X, y = y)
+      cat("Loaded friedman1 dataset\n")
+    }
+    
+    # Load classification datasets
+    if (file.exists(file.path(datasets_path, "heart.RData"))) {
+      load(file.path(datasets_path, "heart.RData"))
+      datasets$classification$heart <- list(X = X, y = y)
+      cat("Loaded heart dataset\n")
+    }
+    
+    # Add more datasets as needed
+  } else {
+    cat("Original datasets directory not found. Using synthetic datasets instead.\n")
+  }
+  
+  # If no datasets were loaded, create synthetic ones
+  if (length(datasets) == 0) {
+    cat("Creating synthetic datasets...\n")
+    datasets$regression$synthetic <- create_regression_dataset()
+    datasets$classification$synthetic <- create_classification_dataset()
+  }
+  
+  return(datasets)
+}
+
 # Main function to run comparison
 run_comparison <- function() {
   cat("Starting comparison between Java and C++ implementations...\n")
   
-  # Create datasets
-  cat("Creating datasets...\n")
-  reg_data <- create_regression_dataset()
-  class_data <- create_classification_dataset()
+  # Load or create datasets
+  datasets <- load_original_datasets()
   
-  # Run regression models
+  # Results to store all comparisons
+  all_results <- list()
+  
+  # Run regression models on all regression datasets
   cat("\nRunning regression models...\n")
-  cat("Java implementation...\n")
-  java_reg <- run_java_regression(reg_data$X, reg_data$y)
-  cat("C++ implementation...\n")
-  cpp_reg <- run_cpp_regression(reg_data$X, reg_data$y)
-  
-  # Run classification models
-  cat("\nRunning classification models...\n")
-  cat("Java implementation...\n")
-  java_class <- run_java_classification(class_data$X, class_data$y)
-  cat("C++ implementation...\n")
-  cpp_class <- run_cpp_classification(class_data$X, class_data$y)
-  
-  # Compare results
-  cat("\n=== Regression Comparison ===\n")
-  reg_comparison <- compare_results(java_reg, cpp_reg, "regression")
-  
-  cat("\n=== Classification Comparison ===\n")
-  class_comparison <- compare_results(java_class, cpp_class, "classification")
-  
-  # Return all results
-  list(
-    regression = list(
+  for (dataset_name in names(datasets$regression)) {
+    cat("\nDataset:", dataset_name, "\n")
+    dataset <- datasets$regression[[dataset_name]]
+    
+    cat("Java implementation...\n")
+    java_reg <- run_java_regression(dataset$X, dataset$y)
+    
+    cat("C++ implementation...\n")
+    cpp_reg <- run_cpp_regression(dataset$X, dataset$y)
+    
+    # Compare results
+    cat("\n=== Regression Comparison for", dataset_name, "===\n")
+    reg_comparison <- compare_results(java_reg, cpp_reg, "regression")
+    
+    # Store results
+    all_results$regression[[dataset_name]] <- list(
       java = java_reg,
       cpp = cpp_reg,
       comparison = reg_comparison
-    ),
-    classification = list(
+    )
+  }
+  
+  # Run classification models on all classification datasets
+  cat("\nRunning classification models...\n")
+  for (dataset_name in names(datasets$classification)) {
+    cat("\nDataset:", dataset_name, "\n")
+    dataset <- datasets$classification[[dataset_name]]
+    
+    cat("Java implementation...\n")
+    java_class <- run_java_classification(dataset$X, dataset$y)
+    
+    cat("C++ implementation...\n")
+    cpp_class <- run_cpp_classification(dataset$X, dataset$y)
+    
+    # Compare results
+    cat("\n=== Classification Comparison for", dataset_name, "===\n")
+    class_comparison <- compare_results(java_class, cpp_class, "classification")
+    
+    # Store results
+    all_results$classification[[dataset_name]] <- list(
       java = java_class,
       cpp = cpp_class,
       comparison = class_comparison
     )
-  )
+  }
+  
+  # Return all results
+  return(all_results)
 }
 
 # Run the comparison
