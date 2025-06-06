@@ -234,15 +234,118 @@ bartMachineTreeNode* bartmachine_g_mh::pickPruneNodeOrChangeNode(bartMachineTree
     return prunable_and_changeable_nodes[static_cast<int>(std::floor(StatToolbox::rand() * prunable_and_changeable_nodes.size()))];
 }
 
-// Placeholder implementations for Task 5.5
+/**
+ * Perform the change step on a tree and return the log Metropolis-Hastings ratio
+ * 
+ * @param T_i       The root node of the original tree 
+ * @param T_star    The root node of a copy of the original tree where one node will be changed
+ * @return          The log Metropolis-Hastings ratio
+ * @see             Section A.3 of Kapelner, A and Bleich, J. bartMachine: A Powerful Tool for Machine Learning in R. ArXiv e-prints, 2013
+ */
 double bartmachine_g_mh::doMHChangeAndCalcLnR(bartMachineTreeNode* T_i, bartMachineTreeNode* T_star) {
-    // This is a placeholder implementation
-    // Will be implemented in Task 5.5
-    return std::numeric_limits<double>::lowest();
+    // Select a node suitable for changing
+    bartMachineTreeNode* eta_star = pickPruneNodeOrChangeNode(T_star);
+    // If we didn't find one to change, then we can't change, so reject offhand
+    if (eta_star == nullptr) {
+        return std::numeric_limits<double>::lowest();
+    }
+    
+    // Create a clone of the node for calculation purposes
+    bartMachineTreeNode* eta_just_for_calculation = eta_star->clone();
+    
+    // Now start the change process
+    // First pick the attribute and then the split and then which way to send the missing data
+    eta_star->splitAttributeM = pickRandomPredictorThatCanBeAssigned(eta_star);
+    eta_star->splitValue = eta_star->pickRandomSplitValue();
+    eta_star->sendMissingDataRight = bartMachineTreeNode::pickRandomDirectionForMissingData();
+    // Inform the user if things go awry
+    if (eta_star->splitValue == bartMachineTreeNode::BAD_FLAG_double) {
+        return std::numeric_limits<double>::lowest();
+    }
+    
+    eta_star->propagateDataByChangedRule();
+    // The children no longer have the right data!
+    eta_star->left->clearRulesAndSplitCache();
+    eta_star->right->clearRulesAndSplitCache();
+    
+    double ln_tree_structure_ratio_change = calcLnLikRatioChange(eta_just_for_calculation, eta_star);
+    if (DEBUG_MH) {
+        std::cout << gibbs_sample_num << " CHANGE  <<" << eta_star->stringLocation(true) << ">> ---- X_" << (eta_star->splitAttributeM) << 
+            " < " << eta_star->splitValue << " & " << (eta_star->sendMissingDataRight ? "M -> R" : "M -> L") << " from " << 
+            "X_" << (eta_just_for_calculation->splitAttributeM) << 
+            " < " << eta_just_for_calculation->splitValue << " & " << (eta_just_for_calculation->sendMissingDataRight ? "M -> R" : "M -> L") << 
+            "\n  ln lik ratio: " << ln_tree_structure_ratio_change << 
+            "  lik ratio: " << 
+            (std::exp(ln_tree_structure_ratio_change) < 0.00001 ? "very small" : std::to_string(std::exp(ln_tree_structure_ratio_change))) << std::endl;
+    }
+    
+    // Clean up the clone
+    delete eta_just_for_calculation;
+    
+    return ln_tree_structure_ratio_change; // The transition ratio cancels out the tree structure ratio
 }
 
+/**
+ * Calculates the log likelihood ratio for a change step
+ * 
+ * @param eta       The node in the original tree that was targeted for a change in the splitting rule
+ * @param eta_star  The same node but now with a different splitting rule
+ * @return          The log likelihood ratio
+ * @see             Section A.3.2 of Kapelner, A and Bleich, J. bartMachine: A Powerful Tool for Machine Learning in R. ArXiv e-prints, 2013
+ */
 double bartmachine_g_mh::calcLnLikRatioChange(bartMachineTreeNode* eta, bartMachineTreeNode* eta_star) {
-    // This is a placeholder implementation
-    // Will be implemented in Task 5.5
-    return 0.0;
+    int n_1_star = eta_star->left->n_eta;
+    int n_2_star = eta_star->right->n_eta;
+    int n_1 = eta->left->n_eta;
+    int n_2 = eta->right->n_eta;
+    
+    double sigsq = gibbs_samples_of_sigsq[gibbs_sample_num - 1];
+    double ratio_sigsqs = sigsq / hyper_sigsq_mu;
+    double n_1_plus_ratio_sigsqs = n_1 + ratio_sigsqs;
+    double n_2_plus_ratio_sigsqs = n_2 + ratio_sigsqs;
+    
+    // NOTE: this can be sped up by just taking the diffs
+    double sum_sq_1_star = eta_star->left->sumResponsesQuantitySqd();
+    double sum_sq_2_star = eta_star->right->sumResponsesQuantitySqd();
+    double sum_sq_1 = eta->left->sumResponsesQuantitySqd();
+    double sum_sq_2 = eta->right->sumResponsesQuantitySqd();
+    
+    // Couple checks
+    if (n_1_star == 0 || n_2_star == 0) {
+        if (DEBUG_MH) {
+            eta->printNodeDebugInfo("PARENT BEFORE");
+            eta_star->printNodeDebugInfo("PARENT AFTER");
+            eta->left->printNodeDebugInfo("LEFT BEFORE");
+            eta->right->printNodeDebugInfo("RIGHT BEFORE");
+            eta_star->left->printNodeDebugInfo("LEFT AFTER");
+            eta_star->right->printNodeDebugInfo("RIGHT AFTER");
+        }
+        return std::numeric_limits<double>::lowest();
+    }
+    
+    // Do simplified calculation if the n's remain the same
+    if (n_1_star == n_1) {
+        return 1 / (2 * sigsq) * (
+                (sum_sq_1_star - sum_sq_1) / n_1_plus_ratio_sigsqs + 
+                (sum_sq_2_star - sum_sq_2) / n_2_plus_ratio_sigsqs
+            );
+    }
+    // Otherwise do the lengthy calculation
+    else {
+        double n_1_star_plus_ratio_sigsqs = n_1_star + ratio_sigsqs;
+        double n_2_star_plus_ratio_sigsqs = n_2_star + ratio_sigsqs;
+        
+        double a = std::log(n_1_plus_ratio_sigsqs) + 
+                   std::log(n_2_plus_ratio_sigsqs) - 
+                   std::log(n_1_star_plus_ratio_sigsqs) - 
+                   std::log(n_2_star_plus_ratio_sigsqs);
+        double b = (
+                sum_sq_1_star / n_1_star_plus_ratio_sigsqs + 
+                sum_sq_2_star / n_2_star_plus_ratio_sigsqs -
+                sum_sq_1 / n_1_plus_ratio_sigsqs - 
+                sum_sq_2 / n_2_plus_ratio_sigsqs                 
+            );
+        
+        return 0.5 * a + 1 / (2 * sigsq) * b;
+    }
 }
