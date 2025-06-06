@@ -13,17 +13,32 @@
  * Port repository: /Users/mark/Documents/Cline/bartMachine_port
  */
 class bartmachine_g_mh : public bartmachine_f_gibbs_internal {
+public:
+    /** the types of steps in the Metropolis-Hastings tree search */
+    enum class Steps {GROW, PRUNE, CHANGE};
+
+    /**
+     * Randomly chooses among the valid tree proposal steps from a multinomial distribution
+     * 
+     * @return  The step that was chosen
+     */
+    Steps randomlyPickAmongTheProposalSteps();
+
+    // Setter methods for MH probabilities
+    void setProbGrow(double prob_grow) { this->prob_grow = prob_grow; }
+    void setProbPrune(double prob_prune) { this->prob_prune = prob_prune; }
+
+    // Virtual destructor
+    virtual ~bartmachine_g_mh() = default;
+
 protected:
     /** turning this flag on prints out debugging information about the Metropolis-Hastings tree search step */
     static const bool DEBUG_MH = false;
-    
+
     /** the hyperparameter of the probability of picking a grow step during the Metropolis-Hastings tree proposal */
     double prob_grow;
     /** the hyperparameter of the probability of picking a prune step during the Metropolis-Hastings tree proposal */
     double prob_prune;
-
-    /** the types of steps in the Metropolis-Hastings tree search */
-    enum class Steps {GROW, PRUNE, CHANGE};
     
     /**
      * Performs a Metropolis-Hastings step to sample from the posterior distribution of trees
@@ -125,20 +140,6 @@ protected:
      */
     double calcLnLikRatioChange(bartMachineTreeNode* eta, bartMachineTreeNode* eta_star);
     
-    /**
-     * Randomly chooses among the valid tree proposal steps from a multinomial distribution
-     * 
-     * @return  The step that was chosen
-     */
-    Steps randomlyPickAmongTheProposalSteps();
-    
-public:
-    // Setter methods for MH probabilities
-    void setProbGrow(double prob_grow) { this->prob_grow = prob_grow; }
-    void setProbPrune(double prob_prune) { this->prob_prune = prob_prune; }
-    
-    // Virtual destructor
-    virtual ~bartmachine_g_mh() = default;
 };
 
 #endif // BARTMACHINE_G_MH_H

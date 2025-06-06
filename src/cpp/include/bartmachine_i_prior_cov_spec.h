@@ -1,68 +1,80 @@
-/**
- * bartmachine_i_prior_cov_spec.h
- * 
- * Header file for the bartmachine_i_prior_cov_spec class, which handles
- * prior covariate specifications for the BART model.
- */
-
 #ifndef BARTMACHINE_I_PRIOR_COV_SPEC_H
 #define BARTMACHINE_I_PRIOR_COV_SPEC_H
 
 #include "bartmachine_h_eval.h"
 #include <vector>
-#include <string>
 
+// Forward declaration
+class TIntArrayList;
+
+/**
+ * Exact port of bartMachine_i_prior_cov_spec from Java to C++
+ * 
+ * This portion of the code implements the informed prior information on covariates feature.
+ * 
+ * Original Java source: /Users/mark/Documents/Cline/bartMachine/src/bartMachine/bartMachine_i_prior_cov_spec.java
+ * Port repository: /Users/mark/Documents/Cline/bartMachine_port
+ */
 class bartmachine_i_prior_cov_spec : public bartmachine_h_eval {
 protected:
-    // Protected member variables
+    /** Do we use this feature in this BART model? */
+    bool use_prior_cov_spec = false;
     
-    // Covariate importance
-    double* cov_importance_vec;
-    double* cov_importance_sd_vec;
+    /** This is a probability vector which is the prior on which covariates to split instead of the uniform discrete distribution by default */
+    double* cov_split_prior = nullptr;
     
-    // Interaction constraints
-    bool** interaction_constraints;
-    int num_interaction_constraints;
+    /**
+     * Pick one predictor from a set of valid predictors that can be part of a split rule at a node
+     * while accounting for the covariate prior.
+     *
+     * @param node  The node of interest
+     * @return      The index of the column to split on
+     */
+    int pickRandomPredictorThatCanBeAssignedF1(bartMachineTreeNode* node);
     
-    // Variable names
-    std::vector<std::string> var_names;
+    /**
+     * The prior-adjusted number of covariates available to be split at this node
+     *
+     * @param node      The node of interest
+     * @return          The prior-adjusted number of covariates that can be split
+     */
+    double pAdjF1(bartMachineTreeNode* node);
     
-    // Split counts
-    int** split_counts_by_var_and_tree;
-    int* total_count_by_var;
-    
+    /**
+     * Given a set of valid predictors return the probability vector that corresponds to the
+     * elements of <code>cov_split_prior</code> re-normalized because some entries may be deleted
+     *
+     * @param predictors    The indices of the valid covariates
+     * @return              The updated and renormalized prior probability vector on the covariates to split
+     */
+    double* getWeightedCovSplitPriorSubset(TIntArrayList* predictors);
+
 public:
-    // Constructor and destructor
-    bartmachine_i_prior_cov_spec();
-    virtual ~bartmachine_i_prior_cov_spec();
+    /**
+     * Set the covariate split prior
+     * 
+     * @param cov_split_prior   The prior probability vector on the covariates to split
+     */
+    void setCovSplitPrior(double* cov_split_prior);
     
-    // Covariate importance methods
-    virtual void calcCovariateImportance();
-    virtual double* getCovariateImportance();
-    virtual double* getCovariateImportanceSD();
+    /**
+     * Pick one predictor from a set of valid predictors that can be part of a split rule at a node
+     * 
+     * @param node  The node of interest
+     * @return      The index of the column to split on
+     */
+    int pickRandomPredictorThatCanBeAssigned(bartMachineTreeNode* node);
     
-    // Interaction constraint methods
-    virtual void setInteractionConstraints(bool** constraints, int num_constraints);
-    virtual bool** getInteractionConstraints();
-    virtual int getNumInteractionConstraints();
-    virtual bool isInteractionAllowed(int var1, int var2);
+    /**
+     * The prior-adjusted number of covariates available to be split at this node
+     * 
+     * @param node      The node of interest
+     * @return          The prior-adjusted number of covariates that can be split
+     */
+    double pAdj(bartMachineTreeNode* node);
     
-    // Variable name methods
-    virtual void setVarNames(std::vector<std::string> names);
-    virtual std::vector<std::string> getVarNames();
-    virtual std::string getVarName(int var_index);
-    
-    // Split count methods
-    virtual void calcSplitCounts();
-    virtual int** getSplitCountsByVarAndTree();
-    virtual int* getTotalCountByVar();
-    virtual int getSplitCountForVar(int var_index);
-    
-    // Covariate selection methods
-    virtual void setCovariateSelectionMode(bool use_selection);
-    virtual bool getCovariateSelectionMode();
-    virtual void setCovariateSelectionThreshold(double threshold);
-    virtual double getCovariateSelectionThreshold();
+    // Virtual destructor
+    virtual ~bartmachine_i_prior_cov_spec() = default;
 };
 
 #endif // BARTMACHINE_I_PRIOR_COV_SPEC_H

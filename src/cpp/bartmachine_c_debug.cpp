@@ -4,6 +4,14 @@
 // Forward declaration of TreeArrayIllustration class
 class TreeArrayIllustration;
 
+void bartmachine_c_debug::setDebugStatus(bool status) {
+    tree_illust = status;
+}
+
+bool bartmachine_c_debug::getDebugStatus() {
+    return tree_illust;
+}
+
 void bartmachine_c_debug::InitTreeIllustrations() {
     bartMachineTreeNode** initial_trees = gibbs_samples_of_bart_trees[0];
     TreeArrayIllustration* tree_array_illustration = new TreeArrayIllustration(0, unique_name);

@@ -31,6 +31,20 @@ protected:
 
 public:
     /**
+     * Set the debug status
+     * 
+     * @param status    The debug status to set
+     */
+    void setDebugStatus(bool status);
+    
+    /**
+     * Get the debug status
+     * 
+     * @return  The current debug status
+     */
+    bool getDebugStatus();
+    
+    /**
      * Get the untransformed samples of the sigsqs from the Gibbs chain
      * 
      * @return  The vector of untransformed variances over all the Gibbs samples
