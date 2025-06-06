@@ -90,7 +90,7 @@ public:
     void calculateHyperparameters();
     double transform_y(double y_i);
     double* un_transform_y(double* yt, int length);
-    double un_transform_y(double yt_i);
+    virtual double un_transform_y(double yt_i);
     double un_transform_sigsq(double sigsq_t_i);
     double* un_transform_sigsq(double* sigsq_t_is, int length);
     double un_transform_y_and_round(double yt_i);

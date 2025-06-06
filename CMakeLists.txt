@@ -39,6 +39,10 @@ set(STAT_TOOLBOX_SOURCES
     src/cpp/stat_toolbox.cpp
 )
 
+set(STAT_UTIL_SOURCES
+    src/cpp/stat_util.cpp
+)
+
 set(BARTMACHINE_BASE_SOURCES
     src/cpp/bartmachine_a_base.cpp
 )
@@ -94,6 +98,7 @@ add_library(exact_port_mersenne_twister ${MERSENNE_SOURCES})
 add_library(bartmachine_a_base ${BARTMACHINE_BASE_SOURCES})
 add_library(bartmachine_b_hyperparams ${BARTMACHINE_HYPERPARAMS_SOURCES})
 add_library(stat_toolbox ${STAT_TOOLBOX_SOURCES})
+add_library(stat_util ${STAT_UTIL_SOURCES})
 add_library(bartmachine_tree_node ${BARTMACHINE_TREE_NODE_SOURCES})
 add_library(bartmachine_c_debug ${BARTMACHINE_C_DEBUG_SOURCES})
 add_library(bartmachine_d_init ${BARTMACHINE_D_INIT_SOURCES})
@@ -118,7 +123,7 @@ target_link_libraries(bartmachine_g_mh bartmachine_f_gibbs_internal)
 target_link_libraries(bartmachine_h_eval bartmachine_g_mh)
 target_link_libraries(bartmachine_i_prior_cov_spec bartmachine_h_eval)
 target_link_libraries(bartmachine_regression bartmachine_i_prior_cov_spec)
-target_link_libraries(bartmachine_classification bartmachine_i_prior_cov_spec)
+target_link_libraries(bartmachine_classification bartmachine_i_prior_cov_spec stat_util)
 
 # Include tests directory
 include_directories(tests)
@@ -244,54 +249,54 @@ target_link_libraries(test_task_4_1 bartmachine_tree_node stat_toolbox exact_por
 target_link_libraries(test_task_4_2 bartmachine_tree_node stat_toolbox exact_port_mersenne_twister bartmachine_a_base bartmachine_b_hyperparams)
 target_link_libraries(test_task_4_3 bartmachine_tree_node stat_toolbox exact_port_mersenne_twister bartmachine_a_base bartmachine_b_hyperparams)
 target_link_libraries(test_task_5_1 bartmachine_a_base bartmachine_b_hyperparams stat_toolbox exact_port_mersenne_twister)
-target_link_libraries(test_task_5_2 
-    bartmachine_f_gibbs_internal 
-    bartmachine_e_gibbs_base 
-    bartmachine_d_init 
-    bartmachine_c_debug 
-    bartmachine_b_hyperparams 
-    bartmachine_a_base 
-    bartmachine_tree_node 
-    stat_toolbox 
+target_link_libraries(test_task_5_2
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
     exact_port_mersenne_twister
 )
 
-target_link_libraries(test_task_5_3 
+target_link_libraries(test_task_5_3
     bartmachine_g_mh
-    bartmachine_f_gibbs_internal 
-    bartmachine_e_gibbs_base 
-    bartmachine_d_init 
-    bartmachine_c_debug 
-    bartmachine_b_hyperparams 
-    bartmachine_a_base 
-    bartmachine_tree_node 
-    stat_toolbox 
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
     exact_port_mersenne_twister
 )
 
-target_link_libraries(test_task_5_4 
+target_link_libraries(test_task_5_4
     bartmachine_g_mh
-    bartmachine_f_gibbs_internal 
-    bartmachine_e_gibbs_base 
-    bartmachine_d_init 
-    bartmachine_c_debug 
-    bartmachine_b_hyperparams 
-    bartmachine_a_base 
-    bartmachine_tree_node 
-    stat_toolbox 
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
     exact_port_mersenne_twister
 )
 
-target_link_libraries(test_task_5_5 
+target_link_libraries(test_task_5_5
     bartmachine_g_mh
-    bartmachine_f_gibbs_internal 
-    bartmachine_e_gibbs_base 
-    bartmachine_d_init 
-    bartmachine_c_debug 
-    bartmachine_b_hyperparams 
-    bartmachine_a_base 
-    bartmachine_tree_node 
-    stat_toolbox 
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
     exact_port_mersenne_twister
 )
 
@@ -337,6 +342,7 @@ target_link_libraries(test_task_6_2
     bartmachine_a_base
     bartmachine_tree_node
     stat_toolbox
+    stat_util
     exact_port_mersenne_twister
 )
 

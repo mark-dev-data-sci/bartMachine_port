@@ -14,7 +14,7 @@ public:
         }
         return diff;
     }
-    
+
     static double* add_arrays(double* arr1, double* arr2, int length) {
         double* sum = new double[length];
         for (int i = 0; i < length; i++) {
@@ -63,7 +63,7 @@ void bartmachine_e_gibbs_base::DoOneGibbsSample() {
     if (tree_illust) {
         illustrate(tree_array_illustration);
     }
-    
+
     // Clean up
     delete[] residuals;
     delete tree_array_illustration;
@@ -88,7 +88,7 @@ void bartmachine_e_gibbs_base::SampleMusWrapper(int sample_num, int t) {
 
     double current_sigsq = gibbs_samples_of_sigsq[sample_num - 1];
     assignLeafValsBySamplingFromPosteriorMeanAndSigsqAndUpdateYhats(tree, current_sigsq);
-    
+
     // After mus are sampled, we need to update the sum_resids_vec
     // Add in current tree's yhats
     sum_resids_vec = Tools::add_arrays(sum_resids_vec, tree->yhats, n);
@@ -112,27 +112,52 @@ double* bartmachine_e_gibbs_base::getResidualsFromFullSumModel(int sample_num, d
 double* bartmachine_e_gibbs_base::SampleTree(int sample_num, int t, bartMachineTreeNode** trees, TreeArrayIllustration* tree_array_illustration) {
     // First copy the tree from the previous gibbs position
     bartMachineTreeNode* copy_of_old_jth_tree = gibbs_samples_of_bart_trees[sample_num - 1][t]->clone();
-    
+
     // Okay so first we need to get "y" that this tree sees. This is defined as R_j in formula 12 on p274
     // Just go to sum_residual_vec and subtract it from y_trans
     double* temp1 = Tools::subtract_arrays(y_trans, sum_resids_vec, n);
     double* R_j = Tools::add_arrays(temp1, copy_of_old_jth_tree->yhats, n);
     delete[] temp1;
-    
+
     // Now, (important!) set the R_j's as this tree's data.
     copy_of_old_jth_tree->updateWithNewResponsesRecursively(R_j);
-    
+
     // Sample from T_j | R_j, \sigma
     // Now we will run one M-H step on this tree with the y as the R_j
     bartMachineTreeNode* new_jth_tree = metroHastingsPosteriorTreeSpaceIteration(copy_of_old_jth_tree, t, accept_reject_mh, accept_reject_mh_steps);
-    
+
     // Add it to the vector of current sample's trees
     trees[t] = new_jth_tree;
-    
+
     // Now set the new trees in the gibbs sample pantheon
     gibbs_samples_of_bart_trees[sample_num] = trees;
     tree_array_illustration->AddTree(new_jth_tree);
-    
+
     // Return the updated residuals
     return R_j;
+}
+
+void bartmachine_e_gibbs_base::DeleteBurnInsOnPreviousSamples() {
+    // If we're still in the burn-in phase, we don't need to do anything
+    if (gibbs_sample_num <= num_gibbs_burn_in) {
+        return;
+    }
+
+    // If we've just finished the burn-in phase, we need to copy the trees to the after-burn-in array
+    if (gibbs_sample_num == num_gibbs_burn_in + 1) {
+        // Initialize the after-burn-in array
+        int num_samples_after_burn_in = num_gibbs_total_iterations - num_gibbs_burn_in;
+        gibbs_samples_of_bart_trees_after_burn_in = new bartMachineTreeNode**[num_samples_after_burn_in];
+        gibbs_samples_of_sigsq_after_burn_in = new double[num_samples_after_burn_in];
+
+        // Copy the current sample (which is the first after burn-in)
+        gibbs_samples_of_bart_trees_after_burn_in[0] = gibbs_samples_of_bart_trees[gibbs_sample_num];
+        gibbs_samples_of_sigsq_after_burn_in[0] = gibbs_samples_of_sigsq[gibbs_sample_num];
+    }
+    // If we're past the burn-in phase, we need to copy the current sample to the after-burn-in array
+    else if (gibbs_sample_num > num_gibbs_burn_in + 1) {
+        int index = gibbs_sample_num - num_gibbs_burn_in - 1;
+        gibbs_samples_of_bart_trees_after_burn_in[index] = gibbs_samples_of_bart_trees[gibbs_sample_num];
+        gibbs_samples_of_sigsq_after_burn_in[index] = gibbs_samples_of_sigsq[gibbs_sample_num];
+    }
 }

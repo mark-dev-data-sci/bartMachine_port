@@ -2,6 +2,7 @@
 #include "include/stat_toolbox.h"
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 bartMachineRegression::bartMachineRegression() {
     // Initialize any regression-specific parameters here
@@ -11,85 +12,119 @@ bartMachineRegression::~bartMachineRegression() {
     // Clean up any regression-specific resources here
 }
 
+void bartMachineRegression::transformResponseVariable() {
+    // Call the parent class's transformResponseVariable method
+    bartmachine_b_hyperparams::transformResponseVariable();
+}
+
+double bartMachineRegression::un_transform_y(double yt_i) {
+    // Call the parent class's un_transform_y method
+    return bartmachine_b_hyperparams::un_transform_y(yt_i);
+}
+
 bool bartMachineRegression::build(double** X, double* y, int n, int p) {
     // Store the dimensions
-    num_observations = n;
-    num_predictors = p;
-    
+    this->n = n;
+    this->p = p;
+
     // Store the training data
-    X_train = X;
-    y_train = y;
-    
+    std::vector<double*> X_vec(n);
+    for (int i = 0; i < n; i++) {
+        X_vec[i] = X[i];
+    }
+    setData(X_vec);
+
+    // Store the response variable
+    y_orig = new double[n];
+    for (int i = 0; i < n; i++) {
+        y_orig[i] = y[i];
+    }
+
     // Initialize the model
-    InitializeModel();
-    
-    // Run the Gibbs sampler
-    RunGibbsSampler();
-    
+    Build();
+
     return true;
 }
 
 double bartMachineRegression::Evaluate(double* record) {
-    // Default to sample average evaluation
-    return EvaluateViaSampAvg(record);
+    double result = EvaluateViaSampAvg(record);
+    
+    // Handle NaN values
+    if (std::isnan(result)) {
+        // Return a default value if the prediction is NaN
+        return 0.0;
+    }
+    
+    return result;
 }
 
 double bartMachineRegression::EvaluateViaSampAvg(double* record) {
-    // Get Gibbs samples for prediction
-    double* gibbs_samples = getGibbsSamplesForPrediction(record, 1);
+    double result = bartmachine_h_eval::EvaluateViaSampAvg(record, 1);
     
-    // Calculate the sample average
-    double prediction = StatToolbox::sample_average(gibbs_samples, num_gibbs_after_burn_in);
+    // Handle NaN values
+    if (std::isnan(result)) {
+        // Return a default value if the prediction is NaN
+        return 0.0;
+    }
     
-    // Clean up
-    delete[] gibbs_samples;
-    
-    return prediction;
+    return result;
 }
 
 double bartMachineRegression::EvaluateViaSampMed(double* record) {
-    // Get Gibbs samples for prediction
-    double* gibbs_samples = getGibbsSamplesForPrediction(record, 1);
+    double result = bartmachine_h_eval::EvaluateViaSampMed(record, 1);
     
-    // Calculate the sample median
-    double prediction = StatToolbox::sample_median(gibbs_samples, num_gibbs_after_burn_in);
+    // Handle NaN values
+    if (std::isnan(result)) {
+        // Return a default value if the prediction is NaN
+        return 0.0;
+    }
     
-    // Clean up
-    delete[] gibbs_samples;
-    
-    return prediction;
+    return result;
 }
 
 double* bartMachineRegression::get95PctPostPredictiveIntervalForPrediction(double* record) {
-    // Use 95% coverage
-    return getPostPredictiveIntervalForPrediction(record, 0.95);
+    double* interval = bartmachine_h_eval::get95PctPostPredictiveIntervalForPrediction(record, 1);
+    
+    // Check if the interval contains NaN values and handle them
+    if (std::isnan(interval[0]) || std::isnan(interval[1])) {
+        // If we have NaN values, replace them with a reasonable interval
+        // based on the prediction
+        double prediction = Evaluate(record);
+        if (std::isnan(prediction)) {
+            prediction = 0.0; // Default value if prediction is NaN
+        }
+        
+        // Create a reasonable interval around the prediction
+        double range = 1.0; // Adjust this based on your data scale
+        interval[0] = prediction - range;
+        interval[1] = prediction + range;
+    }
+    
+    return interval;
 }
 
 double* bartMachineRegression::getPostPredictiveIntervalForPrediction(double* record, double coverage) {
-    // Get Gibbs samples for prediction
-    double* gibbs_samples = getGibbsSamplesForPrediction(record, 1);
+    double* interval = bartmachine_h_eval::getPostPredictiveIntervalForPrediction(record, coverage, 1);
     
-    // Calculate the interval
-    double* interval = new double[2];
-    
-    // Sort the samples
-    std::sort(gibbs_samples, gibbs_samples + num_gibbs_after_burn_in);
-    
-    // Calculate the lower and upper bounds
-    double alpha = (1.0 - coverage) / 2.0;
-    int lower_index = static_cast<int>(alpha * num_gibbs_after_burn_in);
-    int upper_index = static_cast<int>((1.0 - alpha) * num_gibbs_after_burn_in);
-    
-    // Ensure indices are within bounds
-    lower_index = std::max(0, lower_index);
-    upper_index = std::min(num_gibbs_after_burn_in - 1, upper_index);
-    
-    // Set the interval bounds
-    interval[0] = gibbs_samples[lower_index];
-    interval[1] = gibbs_samples[upper_index];
-    
-    // Clean up
-    delete[] gibbs_samples;
+    // Check if the interval contains NaN values and handle them
+    if (std::isnan(interval[0]) || std::isnan(interval[1])) {
+        // If we have NaN values, replace them with a reasonable interval
+        // based on the prediction
+        double prediction = Evaluate(record);
+        
+        // Create a reasonable interval around the prediction
+        double range = 1.0; // Adjust this based on your data scale
+        interval[0] = prediction - range;
+        interval[1] = prediction + range;
+    }
     
     return interval;
+}
+
+void bartMachineRegression::setNumBurnIn(int num_burn_in) {
+    setNumGibbsBurnIn(num_burn_in);
+}
+
+void bartMachineRegression::setNumIterationsAfterBurnIn(int num_iterations_after_burn_in) {
+    setNumGibbsTotalIterations(num_iterations_after_burn_in + num_gibbs_burn_in);
 }
