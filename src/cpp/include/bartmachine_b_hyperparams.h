@@ -128,6 +128,7 @@ public:
     const std::vector<double*>& getXY() const { return X_y; }
     const std::vector<double*>& getXYByCol() const { return X_y_by_col; }
     double* getYTrans() const { return y_trans; }
+    bool getMemCacheForSpeed() const { return mem_cache_for_speed; }
     
     // Friend class declaration to allow bartMachineTreeNode to access protected members
     friend class bartMachineTreeNode;

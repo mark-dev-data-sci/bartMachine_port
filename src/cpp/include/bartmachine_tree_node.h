@@ -142,6 +142,14 @@ public:
         padj = value;
     }
     
+    int getNAdj() {
+        return nAdj();
+    }
+    
+    const std::vector<int>& getPossibleRuleVariables() const {
+        return possible_rule_variables;
+    }
+    
 protected:
     /** a link back to the overall bart model */
     bartmachine_b_hyperparams* bart;

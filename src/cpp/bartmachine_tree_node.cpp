@@ -485,6 +485,19 @@ std::vector<int> bartMachineTreeNode::predictorsThatCouldBeUsedToSplitAtNode() {
 }
 
 std::vector<int> bartMachineTreeNode::tabulatePredictorsThatCouldBeUsedToSplitAtNode() {
+    // DEBUG_TASK_5_3_BEGIN
+    auto debug_task_5_3_log = [](const std::string& message) {
+        std::cout << "[DEBUG_TASK_5_3] " << message << std::endl;
+    };
+    
+    debug_task_5_3_log("Entering tabulatePredictorsThatCouldBeUsedToSplitAtNode()");
+    debug_task_5_3_log("mem_cache_for_speed: " + std::string(bart->mem_cache_for_speed ? "true" : "false"));
+    debug_task_5_3_log("parent: " + std::string(parent == nullptr ? "nullptr" : "not nullptr"));
+    debug_task_5_3_log("n_eta: " + std::to_string(n_eta));
+    debug_task_5_3_log("bart->p: " + std::to_string(bart->p));
+    debug_task_5_3_log("X_y_by_col size: " + std::to_string(bart->X_y_by_col.size()));
+    // DEBUG_TASK_5_3_END
+    
     std::unordered_set<int> possible_rule_variables_contenders;
     if (bart->mem_cache_for_speed && parent != nullptr) {
         // Check interaction constraints first
@@ -501,22 +514,65 @@ std::vector<int> bartMachineTreeNode::tabulatePredictorsThatCouldBeUsedToSplitAt
         }
     }
 
+    // DEBUG_TASK_5_3_BEGIN
+    debug_task_5_3_log("possible_rule_variables_contenders size: " + std::to_string(possible_rule_variables_contenders.size()));
+    // DEBUG_TASK_5_3_END
+
     std::vector<int> possible_rule_variables;
-    for (int j = 0; j < bart->p; j++) {
+    
+    // Use bart->X_y_by_col.size() - 1 instead of bart->p
+    // This is because in some cases (like in the test code), bart->p might not be set correctly,
+    // but bart->X_y_by_col.size() will always reflect the actual number of predictors + 1 (for the response variable)
+    int num_predictors = bart->X_y_by_col.size() - 1;
+    
+    // DEBUG_TASK_5_3_BEGIN
+    debug_task_5_3_log("Using num_predictors: " + std::to_string(num_predictors) + " instead of bart->p: " + std::to_string(bart->p));
+    // DEBUG_TASK_5_3_END
+    
+    for (int j = 0; j < num_predictors; j++) {
+        // DEBUG_TASK_5_3_BEGIN
+        debug_task_5_3_log("Checking predictor " + std::to_string(j));
+        // DEBUG_TASK_5_3_END
+        
+        // Only skip if possible_rule_variables_contenders is not empty AND j is not in it
         if (!possible_rule_variables_contenders.empty() && possible_rule_variables_contenders.count(j) == 0) {
+            // DEBUG_TASK_5_3_BEGIN
+            debug_task_5_3_log("Skipping predictor " + std::to_string(j) + " due to contenders constraint");
+            // DEBUG_TASK_5_3_END
             continue;
         }
         
         // If size of unique of x_i > 1
         double* x_dot_j = bart->X_y_by_col[j];
         
+        // DEBUG_TASK_5_3_BEGIN
+        debug_task_5_3_log("Checking variability for predictor " + std::to_string(j));
+        // DEBUG_TASK_5_3_END
+        
         for (int i = 1; i < n_eta; i++) {
             if (x_dot_j[indicies[i - 1]] != x_dot_j[indicies[i]]) {
+                // DEBUG_TASK_5_3_BEGIN
+                debug_task_5_3_log("Found variability for predictor " + std::to_string(j) + 
+                                  " at indices " + std::to_string(indicies[i-1]) + " and " + 
+                                  std::to_string(indicies[i]) + " with values " + 
+                                  std::to_string(x_dot_j[indicies[i-1]]) + " and " + 
+                                  std::to_string(x_dot_j[indicies[i]]));
+                // DEBUG_TASK_5_3_END
                 possible_rule_variables.push_back(j);
                 break;
             }
         }
     }
+    
+    // DEBUG_TASK_5_3_BEGIN
+    std::string result = "Final possible_rule_variables: ";
+    for (int var : possible_rule_variables) {
+        result += std::to_string(var) + " ";
+    }
+    debug_task_5_3_log(result);
+    debug_task_5_3_log("Returning " + std::to_string(possible_rule_variables.size()) + " predictors");
+    // DEBUG_TASK_5_3_END
+    
     return possible_rule_variables;
 }
 
@@ -812,6 +868,7 @@ void bartMachineTreeNode::setStumpData(std::vector<double*>& X_y, double* y_tran
     for (int i = 0; i < p; i++) {
         attribute_split_counts[i] = 0;
     }
+    
     
     if (DEBUG_NODES) {
         printNodeDebugInfo("setStumpData");

@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
+
+# Prevent in-source builds
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(FATAL_ERROR "In-source builds are not allowed. Please create a build directory and run CMake from there. You may need to remove CMakeCache.txt and CMakeFiles/ first.")
+endif()
+
 project(bartMachine_port)
 
 # Repository locations
@@ -7,7 +13,7 @@ project(bartMachine_port)
 # Original Java Source: /Users/mark/Documents/Cline/bartMachine/src/bartMachine
 # Original R Source: /Users/mark/Documents/Cline/bartMachine/bartMachine
 
-# Set C++ standard
+# Set C++ standard`
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -44,6 +50,26 @@ set(BARTMACHINE_TREE_NODE_SOURCES
     src/cpp/bartmachine_tree_node.cpp
 )
 
+set(BARTMACHINE_C_DEBUG_SOURCES
+    src/cpp/bartmachine_c_debug.cpp
+)
+
+set(BARTMACHINE_D_INIT_SOURCES
+    src/cpp/bartmachine_d_init.cpp
+)
+
+set(BARTMACHINE_E_GIBBS_BASE_SOURCES
+    src/cpp/bartmachine_e_gibbs_base.cpp
+)
+
+set(BARTMACHINE_F_GIBBS_INTERNAL_SOURCES
+    src/cpp/bartmachine_f_gibbs_internal.cpp
+)
+
+set(BARTMACHINE_G_MH_SOURCES
+    src/cpp/bartmachine_g_mh.cpp
+)
+
 # Create library for MersenneTwister
 add_library(exact_port_mersenne_twister ${MERSENNE_SOURCES})
 
@@ -52,80 +78,106 @@ add_library(bartmachine_a_base ${BARTMACHINE_BASE_SOURCES})
 add_library(bartmachine_b_hyperparams ${BARTMACHINE_HYPERPARAMS_SOURCES})
 add_library(stat_toolbox ${STAT_TOOLBOX_SOURCES})
 add_library(bartmachine_tree_node ${BARTMACHINE_TREE_NODE_SOURCES})
+add_library(bartmachine_c_debug ${BARTMACHINE_C_DEBUG_SOURCES})
+add_library(bartmachine_d_init ${BARTMACHINE_D_INIT_SOURCES})
+add_library(bartmachine_e_gibbs_base ${BARTMACHINE_E_GIBBS_BASE_SOURCES})
+add_library(bartmachine_f_gibbs_internal ${BARTMACHINE_F_GIBBS_INTERNAL_SOURCES})
+add_library(bartmachine_g_mh ${BARTMACHINE_G_MH_SOURCES})
 
 # Set up dependencies
 target_link_libraries(bartmachine_b_hyperparams bartmachine_a_base)
 target_link_libraries(stat_toolbox exact_port_mersenne_twister bartmachine_b_hyperparams)
 target_link_libraries(bartmachine_tree_node stat_toolbox bartmachine_b_hyperparams)
 target_link_libraries(bartmachine_a_base bartmachine_tree_node)
+target_link_libraries(bartmachine_c_debug bartmachine_b_hyperparams)
+target_link_libraries(bartmachine_d_init bartmachine_c_debug stat_toolbox)
+target_link_libraries(bartmachine_e_gibbs_base bartmachine_d_init)
+target_link_libraries(bartmachine_f_gibbs_internal bartmachine_e_gibbs_base stat_toolbox)
+target_link_libraries(bartmachine_g_mh bartmachine_f_gibbs_internal)
+
+# Include tests directory
+include_directories(tests)
 
 # Create test executables
 add_executable(test_basic_compilation
     test_basic_compilation.cpp
 )
 
+# Task 1 tests
 add_executable(test_task_1_2
-    test_task_1_2.cpp
+    tests/test_task_1_2.cpp
 )
 
 add_executable(test_task_1_3
-    test_task_1_3.cpp
+    tests/test_task_1_3.cpp
 )
 
 add_executable(test_task_1_4
-    test_task_1_4.cpp
+    tests/test_task_1_4.cpp
 )
 
+# Task 2 tests
 add_executable(test_task_2_1
-    test_task_2_1.cpp
+    tests/test_task_2_1.cpp
 )
 
 add_executable(test_task_2_2
-    test_task_2_2.cpp
+    tests/test_task_2_2.cpp
 )
 
 add_executable(test_task_2_3
-    test_task_2_3.cpp
+    tests/test_task_2_3.cpp
 )
 
 add_executable(test_task_2_4
-    test_task_2_4.cpp
+    tests/test_task_2_4.cpp
 )
 
 add_executable(test_task_2_5
-    test_task_2_5.cpp
+    tests/test_task_2_5.cpp
 )
 
 add_executable(test_task_2_6
-    test_task_2_6.cpp
+    tests/test_task_2_6.cpp
 )
 
+# Task 3 tests
 add_executable(test_task_3_1
-    test_task_3_1.cpp
+    tests/test_task_3_1.cpp
 )
 
 add_executable(test_task_3_2
-    test_task_3_2.cpp
+    tests/test_task_3_2.cpp
 )
 
 add_executable(test_task_3_3
-    test_task_3_3.cpp
+    tests/test_task_3_3.cpp
 )
 
+# Task 4 tests
 add_executable(test_task_4_1
-    test_task_4_1.cpp
+    tests/test_task_4_1.cpp
 )
 
 add_executable(test_task_4_2
-    test_task_4_2.cpp
+    tests/test_task_4_2.cpp
 )
 
 add_executable(test_task_4_3
-    test_task_4_3.cpp
+    tests/test_task_4_3.cpp
 )
 
+# Task 5 tests
 add_executable(test_task_5_1
-    test_task_5_1.cpp
+    tests/test_task_5_1.cpp
+)
+
+add_executable(test_task_5_2
+    tests/test_task_5_2.cpp
+)
+
+add_executable(test_task_5_3
+    tests/test_task_5_3.cpp
 )
 
 # Link the libraries to the tests
@@ -146,6 +198,30 @@ target_link_libraries(test_task_4_1 bartmachine_tree_node stat_toolbox exact_por
 target_link_libraries(test_task_4_2 bartmachine_tree_node stat_toolbox exact_port_mersenne_twister bartmachine_a_base bartmachine_b_hyperparams)
 target_link_libraries(test_task_4_3 bartmachine_tree_node stat_toolbox exact_port_mersenne_twister bartmachine_a_base bartmachine_b_hyperparams)
 target_link_libraries(test_task_5_1 bartmachine_a_base bartmachine_b_hyperparams stat_toolbox exact_port_mersenne_twister)
+target_link_libraries(test_task_5_2 
+    bartmachine_f_gibbs_internal 
+    bartmachine_e_gibbs_base 
+    bartmachine_d_init 
+    bartmachine_c_debug 
+    bartmachine_b_hyperparams 
+    bartmachine_a_base 
+    bartmachine_tree_node 
+    stat_toolbox 
+    exact_port_mersenne_twister
+)
+
+target_link_libraries(test_task_5_3 
+    bartmachine_g_mh
+    bartmachine_f_gibbs_internal 
+    bartmachine_e_gibbs_base 
+    bartmachine_d_init 
+    bartmachine_c_debug 
+    bartmachine_b_hyperparams 
+    bartmachine_a_base 
+    bartmachine_tree_node 
+    stat_toolbox 
+    exact_port_mersenne_twister
+)
 
 # Enable testing
 enable_testing()

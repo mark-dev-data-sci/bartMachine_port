@@ -16,9 +16,9 @@ CTestTestfile.cmake
 Makefile
 Testing/
 
-# Compiled test executables
-test_*
-!test_task_5_1.cpp
+# Test executables (but not source files)
+/test_*
+!/test_*.cpp
 
 # Editor and OS specific files
 .vscode/
@@ -29,3 +29,11 @@ test_*
 # Temporary files
 *.tmp
 *.log
+
+# Documentation and development notes
+# These are useful locally but don't need to be in the repo
+/*.md
+!/README.md
+!/CONSTRAINTS.md
+!/TASK_SEQUENCE.md
+!/VALIDATION_STRATEGY.md
