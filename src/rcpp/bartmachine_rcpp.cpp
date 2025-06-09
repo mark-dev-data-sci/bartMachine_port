@@ -14,6 +14,9 @@
 #include "../cpp/include/bartmachine_tree_node.h"
 #include "../cpp/include/exact_port_mersenne_twister.h"
 
+// Function declaration for initialize_random_samples
+extern "C" void initialize_random_samples();
+
 /**
  * Rcpp interface for bartMachine
  * 
@@ -42,6 +45,9 @@ Rcpp::NumericVector rcpp_vector_double(Rcpp::NumericVector x) {
 
 // [[Rcpp::export]]
 Rcpp::List rcpp_bartmachine_regression(Rcpp::NumericMatrix X, Rcpp::NumericVector y, Rcpp::NumericVector test_point) {
+    // Initialize random samples for chi-squared and standard normal distributions
+    initialize_random_samples();
+    
     // Get dimensions
     int n = X.nrow();
     int p = X.ncol();
@@ -104,6 +110,9 @@ Rcpp::List rcpp_bartmachine_regression(Rcpp::NumericMatrix X, Rcpp::NumericVecto
 
 // [[Rcpp::export]]
 Rcpp::List rcpp_bartmachine_classification(Rcpp::NumericMatrix X, Rcpp::IntegerVector y, Rcpp::NumericVector test_point) {
+    // Initialize random samples for chi-squared and standard normal distributions
+    initialize_random_samples();
+    
     // Get dimensions
     int n = X.nrow();
     int p = X.ncol();
@@ -192,6 +201,9 @@ Rcpp::NumericVector rcpp_sample_from_inv_gamma(double k, double theta, int n) {
 Rcpp::List rcpp_create_regression_model(Rcpp::NumericMatrix X, Rcpp::NumericVector y, 
                                         int num_trees = 50, int num_burn_in = 250, 
                                         int num_iterations_after_burn_in = 1000) {
+    // Initialize random samples for chi-squared and standard normal distributions
+    initialize_random_samples();
+    
     // Get dimensions
     int n = X.nrow();
     int p = X.ncol();
@@ -291,6 +303,9 @@ Rcpp::List rcpp_regression_predict(SEXP model_ptr, Rcpp::NumericMatrix newdata, 
 Rcpp::List rcpp_create_classification_model(Rcpp::NumericMatrix X, Rcpp::IntegerVector y, 
                                            int num_trees = 50, int num_burn_in = 250, 
                                            int num_iterations_after_burn_in = 1000) {
+    // Initialize random samples for chi-squared and standard normal distributions
+    initialize_random_samples();
+    
     // Get dimensions
     int n = X.nrow();
     int p = X.ncol();

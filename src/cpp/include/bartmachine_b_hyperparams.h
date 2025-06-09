@@ -41,11 +41,11 @@ public:
     static constexpr double YminAndYmaxHalfDiff = 0.5;
     
     /** A cached library of chi-squared with degrees of freedom nu plus n (used for Gibbs sampling the variance) */
-    static double samps_chi_sq_df_eq_nu_plus_n[]; // Default values will be set in cpp file
+    static double* samps_chi_sq_df_eq_nu_plus_n; // Default values will be set in cpp file
     /** The number of samples in the cached library of chi-squared values */
     static int samps_chi_sq_df_eq_nu_plus_n_length;
     /** A cached library of standard normal values (used for Gibbs sampling the posterior means of the terminal nodes) */
-    static double samps_std_normal[]; // Default values will be set in cpp file
+    static double* samps_std_normal; // Default values will be set in cpp file
     /** The number of samples in the cached library of standard normal values */
     static int samps_std_normal_length;
     

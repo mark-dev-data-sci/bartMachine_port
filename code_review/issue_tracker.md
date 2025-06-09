@@ -20,10 +20,16 @@ This document tracks all discrepancies identified during the code review of the 
 | Issue ID | Component | Description | Status | Priority | Dependencies | Assigned To | Due Date |
 |----------|-----------|-------------|--------|----------|--------------|-------------|----------|
 | DISC-001 | Example | Example discrepancy | Identified | Medium | None | | |
+| DISC-002 | Random Number Generation | Naming discrepancy and incomplete implementation of MersenneTwisterFast | Identified | Critical | None | | |
 
 ## Critical Issues (Priority: Critical)
 
-*No critical issues identified yet.*
+### DISC-002: Random Number Generation - Naming discrepancy and incomplete implementation
+- **Component**: Random Number Generation
+- **Description**: The original Java implementation is called `MersenneTwisterFast` but the C++ port is named `ExactPortMersenneTwister`. Additionally, many methods in the C++ implementation are incomplete with placeholder implementations.
+- **Status**: Identified
+- **Priority**: Critical
+- **Dependencies**: None
 
 ## High Priority Issues (Priority: High)
 

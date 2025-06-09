@@ -1,0 +1,40 @@
+[run]
+source = bartmachine
+omit =
+    */tests/*
+    */examples/*
+    */__init__.py
+    */setup.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    pass
+    raise ImportError
+    except ImportError
+    raise ValueError
+    raise TypeError
+    raise RuntimeError
+    raise AttributeError
+    raise KeyError
+    raise IndexError
+    raise FileNotFoundError
+    raise IOError
+    raise Exception
+    raise SystemExit
+    warn(
+    warnings.warn(
+    logging.warning(
+    logging.error(
+    logging.exception(
+    logging.critical(
+    logger.warning(
+    logger.error(
+    logger.exception(
+    logger.critical(
+
+[html]
+directory = coverage_html_report

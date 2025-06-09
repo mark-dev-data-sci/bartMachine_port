@@ -91,6 +91,10 @@ set(BARTMACHINE_CLASSIFICATION_SOURCES
     src/cpp/bartmachine_classification.cpp
 )
 
+set(INITIALIZE_RANDOM_SAMPLES_SOURCES
+    src/cpp/initialize_random_samples.cpp
+)
+
 # Create library for MersenneTwister
 add_library(exact_port_mersenne_twister ${MERSENNE_SOURCES})
 
@@ -109,6 +113,7 @@ add_library(bartmachine_h_eval ${BARTMACHINE_H_EVAL_SOURCES})
 add_library(bartmachine_i_prior_cov_spec ${BARTMACHINE_I_PRIOR_COV_SPEC_SOURCES})
 add_library(bartmachine_regression ${BARTMACHINE_REGRESSION_SOURCES})
 add_library(bartmachine_classification ${BARTMACHINE_CLASSIFICATION_SOURCES})
+add_library(initialize_random_samples ${INITIALIZE_RANDOM_SAMPLES_SOURCES})
 
 # Set up dependencies
 target_link_libraries(bartmachine_b_hyperparams bartmachine_a_base)
@@ -124,6 +129,7 @@ target_link_libraries(bartmachine_h_eval bartmachine_g_mh)
 target_link_libraries(bartmachine_i_prior_cov_spec bartmachine_h_eval)
 target_link_libraries(bartmachine_regression bartmachine_i_prior_cov_spec)
 target_link_libraries(bartmachine_classification bartmachine_i_prior_cov_spec stat_util)
+target_link_libraries(initialize_random_samples bartmachine_b_hyperparams exact_port_mersenne_twister)
 
 # Include tests directory
 include_directories(tests)
@@ -234,6 +240,19 @@ add_executable(test_task_6_2
 # Task 7 tests
 add_executable(test_task_7_1
     tests/test_task_7_1.cpp
+)
+
+add_executable(test_task_7_2
+    tests/test_task_7_2.cpp
+)
+
+add_executable(test_task_7_2_new
+    tests/test_task_7_2_new.cpp
+)
+
+# Validation runner
+add_executable(validation_runner
+    src/cpp/validation_runner.cpp
 )
 
 # Link the libraries to the tests
@@ -352,6 +371,62 @@ target_link_libraries(test_task_6_2
 )
 
 target_link_libraries(test_task_7_1
+    bartmachine_regression
+    bartmachine_classification
+    bartmachine_i_prior_cov_spec
+    bartmachine_h_eval
+    bartmachine_g_mh
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
+    stat_util
+    exact_port_mersenne_twister
+)
+
+target_link_libraries(test_task_7_2
+    initialize_random_samples
+    bartmachine_regression
+    bartmachine_classification
+    bartmachine_i_prior_cov_spec
+    bartmachine_h_eval
+    bartmachine_g_mh
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
+    stat_util
+    exact_port_mersenne_twister
+)
+
+target_link_libraries(test_task_7_2_new
+    initialize_random_samples
+    bartmachine_regression
+    bartmachine_classification
+    bartmachine_i_prior_cov_spec
+    bartmachine_h_eval
+    bartmachine_g_mh
+    bartmachine_f_gibbs_internal
+    bartmachine_e_gibbs_base
+    bartmachine_d_init
+    bartmachine_c_debug
+    bartmachine_b_hyperparams
+    bartmachine_a_base
+    bartmachine_tree_node
+    stat_toolbox
+    stat_util
+    exact_port_mersenne_twister
+)
+
+target_link_libraries(validation_runner
     bartmachine_regression
     bartmachine_classification
     bartmachine_i_prior_cov_spec
