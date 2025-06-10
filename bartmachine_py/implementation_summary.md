@@ -12,9 +12,10 @@ We have successfully implemented a Python API for the bartMachine package, provi
    - Implemented cross-validation, prediction, and variable importance functions
 
 2. **Java Bridge**:
-   - Established a robust connection to the Java backend using Py4J
+   - Established a robust connection to the Java backend using Py4J in the `zzz.py` module
    - Implemented proper initialization and shutdown of the JVM
    - Created wrapper functions for Java method calls
+   - Note: Previous java_bridge.py implementation has been moved to redundant_files directory
 
 3. **Data Handling**:
    - Implemented functions for data preprocessing

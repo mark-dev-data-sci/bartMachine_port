@@ -12,8 +12,9 @@ Identify the root cause of the prediction discrepancies between the R and Python
 
 - **Python Implementation**: `/Users/mark/Documents/Cline/bartMachine_port/bartmachine_py`
   - `bartmachine/bartMachine.py`: Main Python API
-  - `bartmachine/java_bridge.py`: Interface to Java backend
+  - `bartmachine/zzz.py`: Interface to Java backend (replaces java_bridge.py)
   - `bartmachine/bart_package_predicts.py`: Prediction functions
+  - Note: Previous files like java_bridge.py, arrays.py, and bart_arrays.py are now in the redundant_files directory
 
 - **R Implementation**: `/Users/mark/Documents/Cline/bartMachine`
   - `R/bart_package_builders.R`: Model building functions

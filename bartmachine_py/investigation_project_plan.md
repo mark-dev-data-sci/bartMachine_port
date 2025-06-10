@@ -7,7 +7,10 @@ Our testing has revealed a consistent negative correlation (around -0.3) between
 ## Source Code Locations
 
 - **Python Implementation**: Current project directory (`/Users/mark/Documents/Cline/bartMachine_port/bartmachine_py`)
+  - Key files: `bartmachine/bartMachine.py`, `bartmachine/zzz.py` (Java interface), `bartmachine/bart_package_predicts.py`
+  - Note: Previous files like java_bridge.py, arrays.py, and bart_arrays.py are now in the redundant_files directory
 - **Original R Implementation**: Local clone of the original bartMachine repository (`/Users/mark/Documents/Cline/bartMachine`)
+  - Key files: `R/bart_package_builders.R`, `R/bart_package_predicts.R`, `R/rJava_interface.R`
 
 ## Phase 1: Data Flow Analysis
 
