@@ -56,9 +56,6 @@ class BartMachine:
         q: Prior parameter for tree structure.
         nu: Prior parameter for error variance.
         prob_rule_class: Probability of using a classification rule.
-        prob_rule_avg: Probability of using an average rule.
-        prob_split_not_decision: Probability of splitting on a non-decision rule.
-        prob_rule_quad: Probability of using a quadratic rule.
         use_missing_data: Whether to use missing data in the model.
         use_missing_data_dummies_as_covars: Whether to use missing data dummies as covariates.
         impute_missingness_with_rf_impute: Whether to impute missing values with random forest.
@@ -88,10 +85,7 @@ class BartMachine:
                 k: float = 2.0, 
                 q: float = 0.9, 
                 nu: float = 3.0,
-                prob_rule_class: float = 0.5, 
-                prob_rule_avg: float = 0.5, 
-                prob_split_not_decision: float = 0.0, 
-                prob_rule_quad: float = 0.1,
+                prob_rule_class: float = 0.5,
                 use_missing_data: bool = False, 
                 use_missing_data_dummies_as_covars: bool = False, 
                 impute_missingness_with_rf_impute: bool = False,
@@ -117,9 +111,6 @@ class BartMachine:
             q: Prior parameter for tree structure.
             nu: Prior parameter for error variance.
             prob_rule_class: Probability of using a classification rule.
-            prob_rule_avg: Probability of using an average rule.
-            prob_split_not_decision: Probability of splitting on a non-decision rule.
-            prob_rule_quad: Probability of using a quadratic rule.
             use_missing_data: Whether to use missing data in the model.
             use_missing_data_dummies_as_covars: Whether to use missing data dummies as covariates.
             impute_missingness_with_rf_impute: Whether to impute missing values with random forest.
@@ -168,9 +159,6 @@ class BartMachine:
         self.q = q
         self.nu = nu
         self.prob_rule_class = prob_rule_class
-        self.prob_rule_avg = prob_rule_avg
-        self.prob_split_not_decision = prob_split_not_decision
-        self.prob_rule_quad = prob_rule_quad
         self.use_missing_data = use_missing_data
         self.use_missing_data_dummies_as_covars = use_missing_data_dummies_as_covars
         self.impute_missingness_with_rf_impute = impute_missingness_with_rf_impute
@@ -245,9 +233,6 @@ class BartMachine:
             q=self.q,
             nu=self.nu,
             prob_rule_class=self.prob_rule_class,
-            prob_rule_avg=self.prob_rule_avg,
-            prob_split_not_decision=self.prob_split_not_decision,
-            prob_rule_quad=self.prob_rule_quad,
             use_missing_data=self.use_missing_data,
             use_missing_data_dummies_as_covars=self.use_missing_data_dummies_as_covars,
             impute_missingness_with_rf_impute=self.impute_missingness_with_rf_impute,
@@ -316,8 +301,17 @@ class BartMachine:
         if self.java_bart_machine is None:
             raise ValueError("The model has not been built. Call build() first.")
         
-        # Preprocess new data
-        X_preprocessed = preprocess_new_data(new_data, self)
+        # Handle missing values if needed
+        if self.replace_missing_data_with_x_j_bar:
+            # Replace missing values with column means
+            new_data_imputed = new_data.fillna(new_data.mean())
+            if self.verbose:
+                print("Imputed missing data in test set using attribute averages.")
+            # Preprocess new data
+            X_preprocessed = preprocess_new_data(new_data_imputed, self)
+        else:
+            # Preprocess new data
+            X_preprocessed = preprocess_new_data(new_data, self)
         
         # Make predictions
         if type == "response":
@@ -601,10 +595,7 @@ def bart_machine(X=None, y=None, Xy=None,
                 k: float = 2.0, 
                 q: float = 0.9, 
                 nu: float = 3.0,
-                prob_rule_class: float = 0.5, 
-                prob_rule_avg: float = 0.5, 
-                prob_split_not_decision: float = 0.0, 
-                prob_rule_quad: float = 0.1,
+                prob_rule_class: float = 0.5,
                 use_missing_data: bool = False, 
                 use_missing_data_dummies_as_covars: bool = False, 
                 impute_missingness_with_rf_impute: bool = False,
@@ -632,9 +623,6 @@ def bart_machine(X=None, y=None, Xy=None,
         q: Prior parameter for tree structure.
         nu: Prior parameter for error variance.
         prob_rule_class: Probability of using a classification rule.
-        prob_rule_avg: Probability of using an average rule.
-        prob_split_not_decision: Probability of splitting on a non-decision rule.
-        prob_rule_quad: Probability of using a quadratic rule.
         use_missing_data: Whether to use missing data in the model.
         use_missing_data_dummies_as_covars: Whether to use missing data dummies as covariates.
         impute_missingness_with_rf_impute: Whether to impute missing values with random forest.
@@ -662,9 +650,6 @@ def bart_machine(X=None, y=None, Xy=None,
         q=q,
         nu=nu,
         prob_rule_class=prob_rule_class,
-        prob_rule_avg=prob_rule_avg,
-        prob_split_not_decision=prob_split_not_decision,
-        prob_rule_quad=prob_rule_quad,
         use_missing_data=use_missing_data,
         use_missing_data_dummies_as_covars=use_missing_data_dummies_as_covars,
         impute_missingness_with_rf_impute=impute_missingness_with_rf_impute,

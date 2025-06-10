@@ -56,9 +56,6 @@ class BartMachine:
         q: Prior parameter for tree structure.
         nu: Prior parameter for error variance.
         prob_rule_class: Probability of using a classification rule.
-        prob_rule_avg: Probability of using an average rule.
-        prob_split_not_decision: Probability of splitting on a non-decision rule.
-        prob_rule_quad: Probability of using a quadratic rule.
         use_missing_data: Whether to use missing data in the model.
         use_missing_data_dummies_as_covars: Whether to use missing data dummies as covariates.
         impute_missingness_with_rf_impute: Whether to impute missing values with random forest.
@@ -88,10 +85,7 @@ class BartMachine:
                 k: float = 2.0, 
                 q: float = 0.9, 
                 nu: float = 3.0,
-                prob_rule_class: float = 0.5, 
-                prob_rule_avg: float = 0.5, 
-                prob_split_not_decision: float = 0.0, 
-                prob_rule_quad: float = 0.1,
+                prob_rule_class: float = 0.5,
                 use_missing_data: bool = False, 
                 use_missing_data_dummies_as_covars: bool = False, 
                 impute_missingness_with_rf_impute: bool = False,
@@ -117,9 +111,6 @@ class BartMachine:
             q: Prior parameter for tree structure.
             nu: Prior parameter for error variance.
             prob_rule_class: Probability of using a classification rule.
-            prob_rule_avg: Probability of using an average rule.
-            prob_split_not_decision: Probability of splitting on a non-decision rule.
-            prob_rule_quad: Probability of using a quadratic rule.
             use_missing_data: Whether to use missing data in the model.
             use_missing_data_dummies_as_covars: Whether to use missing data dummies as covariates.
             impute_missingness_with_rf_impute: Whether to impute missing values with random forest.
@@ -168,9 +159,6 @@ class BartMachine:
         self.q = q
         self.nu = nu
         self.prob_rule_class = prob_rule_class
-        self.prob_rule_avg = prob_rule_avg
-        self.prob_split_not_decision = prob_split_not_decision
-        self.prob_rule_quad = prob_rule_quad
         self.use_missing_data = use_missing_data
         self.use_missing_data_dummies_as_covars = use_missing_data_dummies_as_covars
         self.impute_missingness_with_rf_impute = impute_missingness_with_rf_impute
@@ -220,6 +208,25 @@ class BartMachine:
         # Store the training data features
         self.training_data_features = self.X.columns.tolist()
         
+        # Check for missing values
+        if not self.use_missing_data and not self.replace_missing_data_with_x_j_bar:
+            # If we're not using missing data, check if there are any missing values
+            rows_before = len(self.X)
+            X_no_missing = self.X.dropna()
+            rows_after = len(X_no_missing)
+            
+            if rows_before - rows_after > 0:
+                raise ValueError(
+                    f"You have {rows_before - rows_after} observations with missing data. "
+                    "You must either omit your missing data using dropna() or turn on the "
+                    "'use_missing_data' or 'replace_missing_data_with_x_j_bar' feature in order to use bartMachine."
+                )
+        elif self.replace_missing_data_with_x_j_bar:
+            # Replace missing values with column means
+            self.X = self.X.fillna(self.X.mean())
+            if self.verbose:
+                print("Imputed missing data using attribute averages.")
+        
         # Preprocess training data
         preprocessed_data = preprocess_training_data(
             X=self.X,
@@ -245,9 +252,6 @@ class BartMachine:
             q=self.q,
             nu=self.nu,
             prob_rule_class=self.prob_rule_class,
-            prob_rule_avg=self.prob_rule_avg,
-            prob_split_not_decision=self.prob_split_not_decision,
-            prob_rule_quad=self.prob_rule_quad,
             use_missing_data=self.use_missing_data,
             use_missing_data_dummies_as_covars=self.use_missing_data_dummies_as_covars,
             impute_missingness_with_rf_impute=self.impute_missingness_with_rf_impute,
@@ -267,19 +271,27 @@ class BartMachine:
         self.time_to_build = end_time - start_time
         
         # Get training predictions
-        self.y_hat_train = self.predict(self.X)
-        
-        # Calculate training metrics
         if self.pred_type == "regression":
+            # For regression, get response predictions
+            self.y_hat_train = self.predict(self.X, type="response")
+            
             # Calculate RMSE
             self.rmse_train = np.sqrt(mean_squared_error(self.y, self.y_hat_train))
             
             # Calculate pseudo R-squared
-            y_mean = np.mean(self.y)
-            ss_total = np.sum((self.y - y_mean) ** 2)
-            ss_residual = np.sum((self.y - self.y_hat_train) ** 2)
+            # Convert y to numeric if it's categorical
+            y_numeric = pd.to_numeric(self.y) if hasattr(self.y, 'cat') else self.y
+            y_mean = np.mean(y_numeric)
+            ss_total = np.sum((y_numeric - y_mean) ** 2)
+            ss_residual = np.sum((y_numeric - self.y_hat_train) ** 2)
             self.PseudoRsq = 1 - ss_residual / ss_total
         else:
+            # For classification, first get probability predictions
+            self.p_hat_train = self.predict(self.X, type="prob")
+            
+            # Convert probabilities to class labels
+            self.y_hat_train = (self.p_hat_train > self.prob_rule_class).astype(int)
+            
             # Calculate confusion matrix
             self.confusion_matrix = confusion_matrix(self.y, self.y_hat_train)
             
@@ -297,7 +309,7 @@ class BartMachine:
                 print(self.confusion_matrix)
     
     def predict(self, new_data: pd.DataFrame, 
-               type: str = "response") -> Union[np.ndarray, pd.DataFrame]:
+               type: str = None) -> Union[np.ndarray, pd.DataFrame]:
         """
         Make predictions with the BART model.
         
@@ -306,8 +318,12 @@ class BartMachine:
         Args:
             new_data: The new predictor variables.
             type: Type of prediction to return.
-                "response": Return the predicted response.
-                "samples": Return posterior samples.
+                For regression:
+                    "response": Return the predicted response.
+                    "samples": Return posterior samples.
+                For classification:
+                    "prob": Return predicted probabilities.
+                    "class": Return predicted classes.
         
         Returns:
             Predicted values or posterior samples.
@@ -319,24 +335,40 @@ class BartMachine:
         # Preprocess new data
         X_preprocessed = preprocess_new_data(new_data, self)
         
-        # Make predictions
-        if type == "response":
-            # Get predicted response
-            predictions = predict_bart_machine(self.java_bart_machine, X_preprocessed)
+        # Set default type based on model type if not provided
+        if type is None:
+            type = "response" if self.pred_type == "regression" else "prob"
             
-            # Convert to appropriate type
-            if self.pred_type == "classification":
-                # Convert to binary predictions
-                predictions = (predictions > 0.5).astype(int)
-            
-            return predictions
-        elif type == "samples":
-            # Get posterior samples
-            samples = predict_bart_machine(self.java_bart_machine, X_preprocessed, return_samples=True)
-            
-            return samples
+        # Make predictions based on model type and prediction type
+        if self.pred_type == "regression":
+            # For regression models
+            if type == "response":
+                # Get predicted response
+                predictions = predict_bart_machine(self.java_bart_machine, X_preprocessed)
+                return predictions
+            elif type == "samples":
+                # Get posterior samples
+                samples = predict_bart_machine(self.java_bart_machine, X_preprocessed, return_samples=True)
+                return samples
+            else:
+                raise ValueError(f"For regression, type must be either 'response' or 'samples', got '{type}'")
         else:
-            raise ValueError(f"Unknown prediction type: {type}")
+            # For classification models
+            if type == "prob":
+                # Get predicted probabilities
+                predictions = predict_bart_machine(self.java_bart_machine, X_preprocessed)
+                predictions = np.array(predictions)  # Convert list to numpy array
+                return predictions
+            elif type == "class":
+                # Get predicted classes
+                predictions = predict_bart_machine(self.java_bart_machine, X_preprocessed)
+                predictions = np.array(predictions)  # Convert list to numpy array
+                # Convert to binary predictions using prob_rule_class threshold
+                predictions = (predictions > self.prob_rule_class).astype(int)
+                # TODO: Convert to original y levels if y was a factor
+                return predictions
+            else:
+                raise ValueError(f"For classification, type must be either 'prob' or 'class', got '{type}'")
     
     def get_var_importance(self, type: str = "splits") -> pd.Series:
         """
@@ -601,10 +633,7 @@ def bart_machine(X=None, y=None, Xy=None,
                 k: float = 2.0, 
                 q: float = 0.9, 
                 nu: float = 3.0,
-                prob_rule_class: float = 0.5, 
-                prob_rule_avg: float = 0.5, 
-                prob_split_not_decision: float = 0.0, 
-                prob_rule_quad: float = 0.1,
+                prob_rule_class: float = 0.5,
                 use_missing_data: bool = False, 
                 use_missing_data_dummies_as_covars: bool = False, 
                 impute_missingness_with_rf_impute: bool = False,
@@ -632,9 +661,6 @@ def bart_machine(X=None, y=None, Xy=None,
         q: Prior parameter for tree structure.
         nu: Prior parameter for error variance.
         prob_rule_class: Probability of using a classification rule.
-        prob_rule_avg: Probability of using an average rule.
-        prob_split_not_decision: Probability of splitting on a non-decision rule.
-        prob_rule_quad: Probability of using a quadratic rule.
         use_missing_data: Whether to use missing data in the model.
         use_missing_data_dummies_as_covars: Whether to use missing data dummies as covariates.
         impute_missingness_with_rf_impute: Whether to impute missing values with random forest.
@@ -662,9 +688,6 @@ def bart_machine(X=None, y=None, Xy=None,
         q=q,
         nu=nu,
         prob_rule_class=prob_rule_class,
-        prob_rule_avg=prob_rule_avg,
-        prob_split_not_decision=prob_split_not_decision,
-        prob_rule_quad=prob_rule_quad,
         use_missing_data=use_missing_data,
         use_missing_data_dummies_as_covars=use_missing_data_dummies_as_covars,
         impute_missingness_with_rf_impute=impute_missingness_with_rf_impute,

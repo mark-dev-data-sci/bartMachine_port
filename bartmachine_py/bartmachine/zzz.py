@@ -992,10 +992,9 @@ def get_gibbs_samples_sigsqs(bart_machine: JavaObject) -> List[float]:
         raise RuntimeError(f"Failed to get Gibbs samples of sigma squared: {str(e)}")
 
 def create_bart_machine_object(X: np.ndarray, y: np.ndarray, num_trees: int = 50,
-                              num_burn_in: int = 250, num_iterations_after_burn_in: int = 1000,
+num_burn_in: int = 250, num_iterations_after_burn_in: int = 1000,
                               alpha: float = 0.95, beta: float = 2.0, k: float = 2.0, q: float = 0.9, nu: float = 3.0,
-                              prob_rule_class: float = 0.5, prob_rule_avg: float = 0.5, prob_split_not_decision: float = 0.0,
-                              prob_rule_quad: float = 0.1, use_missing_data: bool = False,
+                              prob_rule_class: float = 0.5, use_missing_data: bool = False,
                               use_missing_data_dummies_as_covars: bool = False, impute_missingness_with_rf_impute: bool = False,
                               replace_missing_data_with_x_j_bar: bool = False, impute_missingness_with_x_j_bar_for_lm: bool = False,
                               verbose: bool = False, seed: Optional[int] = None, cov_prior_vec: Optional[np.ndarray] = None,
@@ -1018,9 +1017,6 @@ def create_bart_machine_object(X: np.ndarray, y: np.ndarray, num_trees: int = 50
         q: Prior parameter for leaf values.
         nu: Prior parameter for error variance.
         prob_rule_class: Probability of using a classification rule.
-        prob_rule_avg: Probability of using an average rule.
-        prob_split_not_decision: Probability of splitting on a non-decision rule.
-        prob_rule_quad: Probability of using a quadratic rule.
         use_missing_data: Whether to use missing data in the model.
         use_missing_data_dummies_as_covars: Whether to use missing data dummies as covariates.
         impute_missingness_with_rf_impute: Whether to impute missing values with random forest.

@@ -52,7 +52,7 @@ def test_array_conversion():
     python_array = [1.0, 2.0, 3.0, 4.0, 5.0]
     
     # Convert to Java array
-    java_array = convert_to_java_array(python_array, "java.lang.Double")
+    java_array = convert_to_java_array(python_array, "double")
     
     # Convert back to Python array
     python_array2 = convert_from_java_array(java_array)
@@ -72,7 +72,7 @@ def test_2d_array_conversion():
     ]
     
     # Convert to Java 2D array
-    java_2d_array = convert_to_java_2d_array(python_2d_array, "java.lang.Double")
+    java_2d_array = convert_to_java_2d_array(python_2d_array, "double")
     
     # Convert back to Python 2D array
     python_2d_array2 = convert_from_java_2d_array(java_2d_array)

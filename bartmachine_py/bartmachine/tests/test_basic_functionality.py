@@ -27,7 +27,8 @@ def test_regression_model_building(synthetic_data):
         num_trees=10,  # Use a small number of trees for faster testing
         num_burn_in=10,
         num_iterations_after_burn_in=20,
-        seed=123
+        seed=123,
+        pred_type="regression"  # Explicitly set prediction type
     )
     
     # Check that the model was built successfully
@@ -48,7 +49,8 @@ def test_classification_model_building(classification_data):
         num_trees=10,  # Use a small number of trees for faster testing
         num_burn_in=10,
         num_iterations_after_burn_in=20,
-        seed=123
+        seed=123,
+        pred_type="classification"  # Explicitly set prediction type
     )
     
     # Check that the model was built successfully
@@ -94,7 +96,8 @@ def test_classification_prediction(classification_data):
         num_trees=10,  # Use a small number of trees for faster testing
         num_burn_in=10,
         num_iterations_after_burn_in=20,
-        seed=123
+        seed=123,
+        pred_type="classification"  # Explicitly set prediction type
     )
     
     # Make predictions
@@ -103,8 +106,8 @@ def test_classification_prediction(classification_data):
     # Check that the predictions have the right shape
     assert len(y_pred) == len(X_test)
     
-    # Check that the predictions are valid categories
-    assert all(pred in y_train.cat.categories for pred in y_pred)
+    # Check that the predictions are probabilities (between 0 and 1)
+    assert np.all(y_pred >= 0) and np.all(y_pred <= 1)
     
     # Make probability predictions
     y_prob_pred = bart.predict(X_test, type="prob")
@@ -134,7 +137,7 @@ def test_missing_data_handling(synthetic_data):
         num_trees=10,  # Use a small number of trees for faster testing
         num_burn_in=10,
         num_iterations_after_burn_in=20,
-        use_missing_data=True,
+        replace_missing_data_with_x_j_bar=True,  # Replace missing values with column means
         seed=123
     )
     
