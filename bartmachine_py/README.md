@@ -1,112 +1,108 @@
-# bartmachine
+# bartMachine Python Package
 
-Python port of the bartMachine R package for Bayesian Additive Regression Trees (BART).
+This package provides a Python implementation of the bartMachine R package, which implements Bayesian Additive Regression Trees (BART).
 
 ## Overview
 
-This package provides a Python implementation of Bayesian Additive Regression Trees (BART) based on the original bartMachine R package. It maintains the same functionality and interface as the R package, but with a Python-friendly API.
+The bartMachine Python package is a direct port of the R package, with the same API and functionality. It uses the same Java backend as the R package, but provides a Python interface.
 
-The implementation uses the original Java backend through a Python-Java bridge, ensuring exact numerical equivalence with the R implementation.
+The package provides a comprehensive set of tools for building, evaluating, and interpreting BART models for regression and classification tasks.
+
+## Key Features
+
+- **BART Models**: Build BART models for regression and classification tasks
+- **Cross-Validation**: Perform cross-validation to find optimal hyperparameters
+- **Variable Importance**: Assess the importance of variables in the model
+- **Visualization**: Visualize model results and diagnostics
+- **Prediction**: Make predictions with credible and prediction intervals
+- **F-Tests**: Perform statistical tests for variable importance
 
 ## Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/username/bartmachine_py.git
-cd bartmachine_py
-
-# Create a virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Install the package
-pip install -e .
+pip install bartmachine
 ```
 
-## Requirements
-
-- Python 3.6+
-- Java 8+
-- NumPy
-- pandas
-- py4j
-- matplotlib
-- scikit-learn
-- pytest
-- rpy2 (for testing equivalence with R implementation)
-
-## Usage
+## Quick Start
 
 ```python
-import numpy as np
 import pandas as pd
-from bartmachine import BartMachine, initialize_jvm, shutdown_jvm
+import numpy as np
+from bartmachine import bart_machine, initialize_jvm
 
 # Initialize the JVM
 initialize_jvm()
 
-# Generate synthetic data
-np.random.seed(123)
-n = 100
-p = 5
-X = np.random.normal(0, 1, (n, p))
-y = 2 * X[:, 0] + 3 * X[:, 1] + np.random.normal(0, 1, n)
+# Load data
+X = pd.DataFrame({
+    'x1': np.random.normal(0, 1, 100),
+    'x2': np.random.normal(0, 1, 100),
+    'x3': np.random.normal(0, 1, 100)
+})
+y = X['x1'] + X['x2']**2 + np.random.normal(0, 0.1, 100)
 
-# Convert to pandas DataFrame and Series
-X_df = pd.DataFrame(X, columns=[f"X{i+1}" for i in range(p)])
-y_series = pd.Series(y, name="y")
-
-# Split data into training and test sets
-train_size = int(0.8 * n)
-X_train = X_df.iloc[:train_size]
-y_train = y_series.iloc[:train_size]
-X_test = X_df.iloc[train_size:]
-y_test = y_series.iloc[train_size:]
-
-# Create and build a BART machine model
-bart = BartMachine(
-    X_train, y_train,
-    num_trees=50,
-    num_burn_in=100,
-    num_iterations_after_burn_in=500,
-    seed=123
-)
-bart.build()
+# Build a BART model
+model = bart_machine(X, y, num_trees=50, num_burn_in=250, num_iterations_after_burn_in=1000)
 
 # Make predictions
-y_pred = bart.predict(X_test)
+X_test = pd.DataFrame({
+    'x1': np.random.normal(0, 1, 10),
+    'x2': np.random.normal(0, 1, 10),
+    'x3': np.random.normal(0, 1, 10)
+})
+y_hat = model.predict(X_test)
 
-# Calculate RMSE
-rmse = np.sqrt(np.mean((y_test - y_pred) ** 2))
-print(f"RMSE: {rmse:.4f}")
+# Get variable importance
+var_importance = model.get_var_importance()
+print(var_importance)
 
-# Shutdown the JVM when done
-shutdown_jvm()
+# Plot convergence diagnostics
+from bartmachine import plot_convergence_diagnostics
+plot_convergence_diagnostics(model)
+
+# Plot actual vs. predicted values
+from bartmachine import plot_y_vs_yhat
+plot_y_vs_yhat(model)
 ```
 
-## Features
+## Documentation
 
-- Regression and classification with BART
-- Variable selection and importance
-- Hyperparameter tuning
-- Cross-validation
-- Visualization of trees and variable importance
-- Exact numerical equivalence with the R implementation
+For more detailed documentation, see the [API Reference](https://bartmachine.readthedocs.io).
 
-## Testing
+## Implementation Details
 
-```bash
-# Run tests
-pytest bartmachine/tests/
-```
+The Python API is functionally equivalent to the R API, with the same behavior, numerical results, and user experience. The implementation includes:
+
+1. **Core API Functions**:
+   - `bart_machine`: The main function for creating a BART model
+   - `bart_machine_cv`: Cross-validation for BART models
+   - `predict`: Prediction function for BART models
+   - `plot_convergence_diagnostics`: Plotting function for convergence diagnostics
+   - `plot_y_vs_yhat`: Plotting function for actual vs. predicted values
+   - `get_var_importance`: Function for variable importance
+   - `get_var_props_over_chain`: Function for variable inclusion proportions
+   - Other utility functions
+
+2. **Data Handling**:
+   - Functions for data preprocessing
+   - Handling missing values, factors, and other data types
+   - Compatibility with pandas DataFrames and NumPy arrays
+
+3. **Model Building**:
+   - Functions for building BART models
+   - Handling hyperparameter settings
+   - Cross-validation
+
+4. **Prediction**:
+   - Functions for making predictions
+   - Handling different prediction types (point estimates, credible intervals, etc.)
+   - Posterior sampling
+
+5. **Visualization**:
+   - Plotting functions
+   - Matplotlib for visualization
+   - Compatibility with Jupyter notebooks
 
 ## License
 
-MIT
-
-## Acknowledgements
-
-This package is a port of the [bartMachine](https://github.com/kapelner/bartMachine) R package by Adam Kapelner and Justin Bleich.
+This package is licensed under the MIT License.

@@ -70,7 +70,7 @@ The following Java methods are used by the Python implementation:
 To add support for additional Java methods:
 
 1. Add the method to the `BartMachineWrapper` class if it's protected in the original implementation
-2. Add a wrapper function in `java_bridge.py` that calls the Java method
+2. Add a wrapper function in `zzz.py` that calls the Java method
 3. Add appropriate data conversion code
 4. Add error handling
 5. Add tests for the new functionality

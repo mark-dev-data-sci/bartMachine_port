@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 
 from bartmachine import is_jvm_running
-from bartmachine.java_bridge import (
+from bartmachine.zzz import (
     set_seed, get_java_class, convert_to_java_array, convert_to_java_2d_array,
     convert_from_java_array, convert_from_java_2d_array
 )

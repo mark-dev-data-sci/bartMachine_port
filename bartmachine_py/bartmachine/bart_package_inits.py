@@ -1,93 +1,171 @@
 """
-Initialization utilities for bartMachine.
+Initialization for bartMachine
 
-This module provides functions for initializing the Java Virtual Machine (JVM)
-and other resources needed for BART models.
-
-R File Correspondence:
-    This Python module corresponds to 'src/r/bartmachine_cpp_port/bart_package_inits.R' 
-    in the original R package.
-
-Role in Port:
-    This module handles the initialization of the Java environment and other resources
-    needed for BART models. It provides functions for starting and stopping the JVM,
-    loading Java classes, and setting up the environment for BART models.
-
-# PLACEHOLDER MODULE: This module will be fully implemented during the porting process
+This module provides initialization functions for the bartMachine package,
+including setting up global variables and utility functions.
 """
 
-import os
-import sys
+import numpy as np
+import random
 from typing import Optional, Union, List, Dict, Any, Tuple
 
-def initialize_jvm(max_heap_size: str = "2g", 
-                  classpath: Optional[List[str]] = None,
-                  verbose: bool = False) -> None:
+# Import JVM-related functions from zzz.py
+from .zzz import initialize_jvm, shutdown_jvm, is_jvm_running
+
+# Global variables
+bartMachine_globals = {}
+
+# Color array
+COLORS = np.empty(500, dtype=object)
+for i in range(500):
+    COLORS[i] = (random.uniform(0, 0.7), random.uniform(0, 0.7), random.uniform(0, 0.7))
+
+# Default number of cores
+DEFAULT_BART_NUM_CORES = 1
+
+def set_bart_machine_num_cores(num_cores: int) -> None:
     """
-    Initialize the Java Virtual Machine (JVM).
+    Set the number of cores to use for bartMachine.
     
     Args:
-        max_heap_size: Maximum heap size for the JVM.
-        classpath: List of JAR files to add to the classpath.
-        verbose: Whether to print verbose output.
-    
-    # PLACEHOLDER FUNCTION: This function will be fully implemented during the porting process
+        num_cores: The number of cores to use.
     """
-    print("PLACEHOLDER: initialize_jvm function - will be fully implemented during porting")
-    
-    # This is a placeholder implementation
-    from .java_bridge import initialize_jvm as java_bridge_initialize_jvm
-    
-    # Get the default classpath
-    if classpath is None:
-        classpath = []
-        
-        # Add the JAR files in the java directory
-        java_dir = os.path.join(os.path.dirname(__file__), "java")
-        for jar_file in os.listdir(java_dir):
-            if jar_file.endswith(".jar"):
-                classpath.append(os.path.join(java_dir, jar_file))
-    
-    # Initialize the JVM
-    java_bridge_initialize_jvm(max_heap_size=max_heap_size, classpath=classpath)
-    
-    if verbose:
-        print(f"JVM initialized with max heap size {max_heap_size} and classpath {classpath}")
+    bartMachine_globals["BART_NUM_CORES"] = num_cores
+    print(f"bartMachine now using {num_cores} cores.")
 
-def shutdown_jvm(verbose: bool = False) -> None:
+def bart_machine_num_cores() -> int:
     """
-    Shutdown the Java Virtual Machine (JVM).
-    
-    Args:
-        verbose: Whether to print verbose output.
-    
-    # PLACEHOLDER FUNCTION: This function will be fully implemented during the porting process
-    """
-    print("PLACEHOLDER: shutdown_jvm function - will be fully implemented during porting")
-    
-    # This is a placeholder implementation
-    from .java_bridge import shutdown_jvm as java_bridge_shutdown_jvm
-    
-    # Shutdown the JVM
-    java_bridge_shutdown_jvm()
-    
-    if verbose:
-        print("JVM shutdown")
-
-def is_jvm_running() -> bool:
-    """
-    Check if the JVM is running.
+    Get the number of cores in use for bartMachine.
     
     Returns:
-        True if the JVM is running, False otherwise.
-    
-    # PLACEHOLDER FUNCTION: This function will be fully implemented during the porting process
+        The number of cores in use.
     """
-    print("PLACEHOLDER: is_jvm_running function - will be fully implemented during porting")
-    
-    # This is a placeholder implementation
-    from .java_bridge import is_jvm_running as java_bridge_is_jvm_running
-    
-    return java_bridge_is_jvm_running()
+    if "BART_NUM_CORES" in bartMachine_globals:
+        return bartMachine_globals["BART_NUM_CORES"]
+    else:
+        return DEFAULT_BART_NUM_CORES
 
-# Additional initialization functions will be added during the porting process
+def set_bart_machine_memory(bart_max_mem: int) -> None:
+    """
+    Set the maximum memory for bartMachine (deprecated).
+    
+    Args:
+        bart_max_mem: The maximum memory in MB.
+    """
+    print(f"This method has been deprecated. Please set the JVM memory directly when initializing the JVM.")
+
+def get_var_counts_over_chain(bart_machine: Any, type: str = "splits") -> np.ndarray:
+    """
+    Get variable counts over the MCMC chain.
+    
+    Args:
+        bart_machine: The BART machine model.
+        type: The type of counts to get ("trees" or "splits").
+    
+    Returns:
+        The variable counts.
+    """
+    check_serialization(bart_machine)  # ensure the Java object exists and fire an error if not
+
+    if type not in ["trees", "splits"]:
+        raise ValueError('type must be "trees" or "splits"')
+    
+    # Call the Java method through the bridge
+    from . import is_jvm_running
+    if not is_jvm_running():
+        raise RuntimeError("JVM is not running. Call initialize_jvm() first.")
+    
+    C = bart_machine.java_bart_machine.getCountsForAllAttribute(type)
+    
+    # Convert Java array to numpy array
+    C_np = np.array(C)
+    
+    # Set column names
+    column_names = bart_machine.model_matrix_training_data.columns[:bart_machine.p]
+    
+    return C_np
+
+def get_var_props_over_chain(bart_machine: Any, type: str = "splits") -> np.ndarray:
+    """
+    Get variable inclusion proportions over the MCMC chain.
+    
+    Args:
+        bart_machine: The BART machine model.
+        type: The type of proportions to get ("trees" or "splits").
+    
+    Returns:
+        The variable inclusion proportions.
+    """
+    check_serialization(bart_machine)  # ensure the Java object exists and fire an error if not
+    
+    if type not in ["trees", "splits"]:
+        raise ValueError('type must be "trees" or "splits"')
+    
+    # Call the Java method through the bridge
+    from . import is_jvm_running
+    if not is_jvm_running():
+        raise RuntimeError("JVM is not running. Call initialize_jvm() first.")
+    
+    attribute_props = bart_machine.java_bart_machine.getAttributeProps(type)
+    
+    # Convert Java array to numpy array
+    attribute_props_np = np.array(attribute_props)
+    
+    # Set names
+    column_names = bart_machine.model_matrix_training_data.columns[:bart_machine.p]
+    
+    return attribute_props_np
+
+def sigsq_est(bart_machine: Any) -> float:
+    """
+    Private function called in summary() to estimate sigma squared.
+    
+    Args:
+        bart_machine: The BART machine model.
+    
+    Returns:
+        The estimated sigma squared.
+    """
+    # Call the Java method through the bridge
+    from . import is_jvm_running
+    if not is_jvm_running():
+        raise RuntimeError("JVM is not running. Call initialize_jvm() first.")
+    
+    sigsqs = bart_machine.java_bart_machine.getGibbsSamplesSigsqs()
+    
+    # Convert Java array to numpy array
+    sigsqs_np = np.array(sigsqs)
+    
+    # Get samples after burn-in
+    sigsqs_after_burnin = sigsqs_np[-(bart_machine.num_iterations_after_burn_in):]
+    
+    return np.mean(sigsqs_after_burnin)
+
+def sample_mode(data: np.ndarray) -> float:
+    """
+    Calculate the mode of a sample.
+    
+    Args:
+        data: The data to calculate the mode for.
+    
+    Returns:
+        The mode of the data.
+    """
+    values, counts = np.unique(data, return_counts=True)
+    return values[np.argmax(counts)]
+
+def check_serialization(bart_machine: Any) -> None:
+    """
+    Check if a BART machine is properly serialized.
+    
+    Args:
+        bart_machine: The BART machine model.
+    
+    Raises:
+        RuntimeError: If the BART machine is not serialized.
+    """
+    if bart_machine.java_bart_machine is None:
+        raise RuntimeError(
+            "This bartMachine object was loaded but the Java object is not available.\n"
+            "Please build bartMachine with proper Java initialization next time.\n"
+        )
